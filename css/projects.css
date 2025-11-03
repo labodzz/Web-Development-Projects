@@ -1,0 +1,44 @@
+.sidebar {
+  background-color: #f8f9fb;
+  float: left;
+  width: 250px;
+  position: fixed;
+  height: 100%;
+  top: 0;
+  left: 0;
+  align-items: left;
+}
+.scenarij {
+  color: #4f46e5;
+  font-size: 26px;
+  font-family: "Poppins", sans-serif;
+  margin-top: 30px;
+  margin-left: 20px;
+}
+.stavke {
+  margin-left: 20px;
+  font-family: "Inter", sans-serif;
+  display: grid;
+  padding: 20px;
+}
+.body {
+  background-color: #f5f6fa;
+}
+
+.aktivna {
+  color: #4f46e5;
+  background-color: #d5dcf5;
+  border-radius: 10px;
+  padding: 4px;
+  margin-left: -20px;
+}
+
+.tekst {
+  margin-left: 20px;
+}
+
+.linija {
+  margin-top: 10px;
+  width: 200px;
+  border: 1px solid #e2e8f0;
+}
