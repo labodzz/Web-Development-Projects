@@ -42,3 +42,49 @@
   width: 200px;
   border: 1px solid #e2e8f0;
 }
+
+.dno {
+  background-color: #ebecee;
+  border-radius: 10px;
+  padding: 10px;
+  margin-left: 20px;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.profil {
+  background-color: #333333;
+  border-radius: 50%;
+  width: 3em;
+  height: 3em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.u {
+  color: white;
+  font-family: "Inter", sans-serif;
+}
+
+.cont {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 15px;
+  line-height: 1.1;
+}
+.ime {
+  margin-left: 15px;
+  font-family: "Inter", sans-serif;
+  color: #333333;
+  font-weight: 600;
+  margin: 0;
+}
+.member {
+  font-family: "Inter", sans-serif;
+  color: #666666;
+  font-size: 14px;
+  margin: 0;
+}
