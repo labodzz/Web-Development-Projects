@@ -319,3 +319,13 @@ p {
     height: auto;
   }
 }
+
+.dugme:hover {
+  background-color: #4e33cc;
+  cursor: pointer;
+}
+
+.naslov {
+  font-size: 40px;
+  font-family: "Inter", sans-serif;
+}
