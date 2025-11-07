@@ -67,6 +67,36 @@
 
         <label for="uslovi">Omogući Two-Factor Authentication (2FA)</label>
       </div>
+      <div class="podaci3">
+        <p class="podnaslov3"><b>Notifikacije</b></p>
+
+        <div class="poredak">
+          <div class="radio-grupa">
+            <label for="komunikacija" class="lab"
+              >Preferirani način komunikacije:</label
+            >
+
+            <input type="radio" id="email" name="komunikacija" value="email" />
+            <label for="email">Email</label>
+
+            <input type="radio" id="sms" name="komunikacija" value="sms" />
+            <label for="sms">SMS</label>
+
+            <input type="radio" id="none" name="komunikacija" value="none" />
+            <label for="none">None</label>
+          </div>
+        </div>
+
+        <label for="frekvencija">Notification frequency:</label>
+        <select id="frekvencija" name="frekvencija">
+          <option value="daily" selected>Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="never">Never</option>
+        </select>
+      </div>
+
+      <button class="dugme">Spasi promjene</button>
     </div>
   </body>
 </html>
