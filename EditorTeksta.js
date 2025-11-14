@@ -16,7 +16,14 @@ let EditorTeksta = function (divRef) {
 
     let rijeci = tekst.split(/[\s.,]+/).filter((rijec) => rijec.length > 0);
 
-    return rijeci.length;
+    let boldirane = div.querySelectorAll("b, strong");
+    let italic = div.querySelectorAll("i, em");
+
+    return {
+      ukupnorijeci: rijeci.length,
+      boldirane: boldirane.length,
+      italic: italic.length,
+    };
   };
   return {
     dajBrojRijeci: dajBrojRijeci,

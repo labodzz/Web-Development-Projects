@@ -10,7 +10,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let editor = EditorTeksta(div);
 
+  let ispisiBrojRijeci = function () {
+    let brojRijeci = editor.dajBrojRijeci();
+    alert("Ukupno riječi: " + brojRijeci.ukupnorijeci);
+    alert("Boldirane riječi: " + brojRijeci.boldirane);
+    alert("Italic riječi: " + brojRijeci.italic);
+  };
   btn.addEventListener("click", () => {
-    alert("Broj riječi: " + editor.dajBrojRijeci());
+    ispisiBrojRijeci();
   });
 });
