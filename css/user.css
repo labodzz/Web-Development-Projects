@@ -194,6 +194,9 @@ label {
     text-wrap: wrap;
   }
   .lab {
-    margin-right: 100%;
+    display: block;
+    margin-right: 0;
+    margin-bottom: 8px;
+    white-space: nowrap;
   }
 }
