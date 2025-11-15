@@ -204,7 +204,7 @@ body {
 }
 
 .neaktivna:hover {
-  background-color: #dbe1f9;
+  background-color: #e6eafc;
   box-shadow: 0 2px 8px rgba(178, 140, 219, 0.2);
   cursor: pointer;
 }
