@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(246, 241, 241);
+  background-color: rgba(250, 248, 248, 0.841);
   max-width: 840px;
   flex-direction: column;
   border-radius: 15px;
@@ -36,7 +36,7 @@ body {
 
 .podaci {
   text-align: left;
-  background-color: rgb(231, 231, 251);
+  background-color: rgb(240, 240, 253);
   border-radius: 10px;
   padding: 20px;
   margin-right: 20px;
@@ -78,7 +78,7 @@ label {
 
 .podaci2 {
   text-align: left;
-  background-color: rgb(248, 223, 223);
+  background-color: rgb(250, 227, 227);
   border-radius: 10px;
   padding: 20px;
   margin-right: 20px;
@@ -94,7 +94,7 @@ label {
 
 .podaci3 {
   text-align: left;
-  background-color: rgb(226, 252, 247);
+  background-color: rgb(233, 254, 250);
   border-radius: 10px;
   padding: 20px;
   margin-right: 20px;
