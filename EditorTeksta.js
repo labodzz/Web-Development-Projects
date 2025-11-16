@@ -84,8 +84,87 @@ let EditorTeksta = function (divReferenca) {
       italic: brojItalicRijeci,
     };
   };
+
+  let dajUloge = function () {
+    const rijeci = div.innerText.split(/\n/);
+
+    let uloge = [];
+
+    for (let i = 0; i < rijeci.length; i++) {
+      if (
+        i != rijeci.length - 1 &&
+        rijeci[i + 1].toUpperCase() != rijeci[i + 1] &&
+        rijeci[i + 1] != " " &&
+        rijeci[i + 1].length > 0
+      ) {
+        uloge.push(rijeci[i]);
+      }
+    }
+
+    uloge = uloge.filter((uloga) => /^[A-Z ]+$/.test(uloga));
+    let rezultat = [...new Set(uloge)];
+
+    return rezultat;
+  };
+
+  let pogresnaUloga = function () {
+    const rijeci = div.innerText.split(/\n/);
+
+    let uloge = [];
+
+    for (let i = 0; i < rijeci.length; i++) {
+      if (
+        i != rijeci.length - 1 &&
+        rijeci[i + 1].toUpperCase() != rijeci[i + 1] &&
+        rijeci[i + 1] != " " &&
+        rijeci[i + 1].length > 0
+      ) {
+        uloge.push(rijeci[i]);
+      }
+    }
+    uloge = uloge.filter((uloga) => /^[A-Z ]+$/.test(uloga));
+
+    let prviPar = 0;
+    let drugiPar = 0;
+    let pogresnaUloga = [];
+
+    for (let i = 0; i < uloge.length; i++) {
+      for (let k = i + 1; k < uloge.length; k++) {
+        let brojac1 = 0;
+        let brojac2 = 0;
+        for (let j = 0; j < uloge[i].length && j < uloge[k].length; j++) {
+          if (uloge[i].length === uloge[k].length && uloge[i].length <= 5) {
+            if (uloge[i][j] !== uloge[k][j]) {
+              brojac1++;
+            }
+          } else {
+            if (uloge[i][j] !== uloge[k][j]) {
+              brojac2++;
+            }
+          }
+        }
+        if (brojac1 === 1 || brojac2 === 1 || brojac2 === 2) {
+          prviPar = uloge.filter((x) => x === uloge[i]).length;
+          drugiPar = uloge.filter((x) => x === uloge[k]).length;
+          if (prviPar >= 4 && prviPar - drugiPar >= 3) {
+            pogresnaUloga.push(uloge[k]);
+          } else if (drugiPar >= 4 && drugiPar - prviPar >= 3) {
+            pogresnaUloga.push(uloge[i]);
+          }
+        }
+      }
+    }
+
+    let pogresan = [...new Set(pogresnaUloga)];
+    console.log(pogresan);
+    return pogresan;
+  };
+
   return {
     dajBrojRijeci: dajBrojRijeci,
+    dajUloge: dajUloge,
+    pogresnaUloga: pogresnaUloga,
   };
 };
+
 export default EditorTeksta;
