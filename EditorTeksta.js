@@ -177,11 +177,58 @@ let EditorTeksta = function (divReferenca) {
     return broj;
   }
 
+  function formatirajTekst(komanda) {
+    const dozvoljeneKomande = ["bold", "italic", "underline"];
+    if (!dozvoljeneKomande.includes(komanda)) return false;
+
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return false;
+
+    const range = sel.getRangeAt(0);
+
+    if (!div.contains(range.commonAncestorContainer)) return false;
+
+    if (sel.isCollapsed) return false;
+
+    let tag;
+    switch (komanda) {
+      case "bold":
+        tag = "b";
+        break;
+      case "italic":
+        tag = "i";
+        break;
+      case "underline":
+        tag = "u";
+        break;
+    }
+
+    const wrapper = document.createElement(tag);
+    wrapper.appendChild(range.extractContents());
+
+    if (
+      wrapper.childNodes.length === 1 &&
+      wrapper.firstChild.nodeName.toLowerCase() === tag
+    ) {
+      range.insertNode(wrapper.firstChild);
+    } else {
+      range.insertNode(wrapper);
+    }
+
+    sel.removeAllRanges();
+    const noviRange = document.createRange();
+    noviRange.selectNodeContents(wrapper);
+    sel.addRange(noviRange);
+
+    return true;
+  }
+
   return {
     dajBrojRijeci: dajBrojRijeci,
     dajUloge: dajUloge,
     pogresnaUloga: pogresnaUloga,
     brojLinijaTeksta: brojLinijaTeksta,
+    formatirajTekst: formatirajTekst,
   };
 };
 
