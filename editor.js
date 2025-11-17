@@ -17,6 +17,6 @@ window.addEventListener("DOMContentLoaded", () => {
     alert("Italic riječi: " + brojRijeci.italic);
   };
   btn.addEventListener("click", () => {
-    editor.pogresnaUloga();
+    editor.brojLinijaTeksta("LAMIJA");
   });
 });

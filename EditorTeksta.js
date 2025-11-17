@@ -160,10 +160,28 @@ let EditorTeksta = function (divReferenca) {
     return pogresan;
   };
 
+  function brojLinijaTeksta(uloga) {
+    const rijeci = div.innerText.split(/\n/);
+    let broj = 0;
+
+    for (let i = 0; i < rijeci.length; i++) {
+      if (rijeci[i].trim() === uloga) {
+        for (let j = i + 1; j < rijeci.length; j++) {
+          const linija = rijeci[j].trim();
+          if (linija === "" || linija.toUpperCase() === linija) break;
+          broj++;
+        }
+      }
+    }
+
+    return broj;
+  }
+
   return {
     dajBrojRijeci: dajBrojRijeci,
     dajUloge: dajUloge,
     pogresnaUloga: pogresnaUloga,
+    brojLinijaTeksta: brojLinijaTeksta,
   };
 };
 
