@@ -241,6 +241,7 @@ let EditorTeksta = function (divReferenca) {
     let pozivanje = 0;
     let scena = "";
     let trenutni = {};
+    let brojevi = brojReplike(uloga, div);
 
     while (index < tekst.length) {
       if (tekst[index] === uloga) {
@@ -263,7 +264,7 @@ let EditorTeksta = function (divReferenca) {
 
         povratna.push({
           scena: scena,
-          pozicijaUTekstu: pozivanje,
+          pozicijaUTekstu: brojevi[pozivanje - 1],
           trenutni: {
             uloga: uloga,
             replika: rezultat.replika,
@@ -295,6 +296,26 @@ let EditorTeksta = function (divReferenca) {
     return /^(INT\.|EXT\.)\s+[A-Z0-9\s]+-\s+(DAY|NIGHT|AFTERNOON|MORNING|EVENING)$/.test(
       linija
     );
+  };
+
+  let brojReplike = function (uloga, div) {
+    let tekst = div.innerText.split(/\n/);
+    let redniBrojevi = [];
+    let broj = 0;
+
+    for (let i = 0; i < tekst.length; i++) {
+      if (dajUloge().includes(tekst[i])) {
+        let replikaObj = vratiRepliku(div, tekst[i], i, 0);
+        if (replikaObj.replika.length > 0) {
+          broj++;
+          if (tekst[i] === uloga) {
+            redniBrojevi.push(broj);
+          }
+        }
+      }
+    }
+
+    return redniBrojevi;
   };
 
   let vratiRepliku = function (div, uloga, index, pozivanje) {
