@@ -169,6 +169,7 @@ let EditorTeksta = function (divReferenca) {
         for (let j = i + 1; j < rijeci.length; j++) {
           const linija = rijeci[j].trim();
           if (linija === "" || linija.toUpperCase() === linija) break;
+          if (!/^\(.*\)$/.test(linija)) continue;
           broj++;
         }
       }
