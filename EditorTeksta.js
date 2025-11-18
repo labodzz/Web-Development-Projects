@@ -242,7 +242,7 @@ let EditorTeksta = function (divReferenca) {
     let scena = "";
     let trenutni = {};
     let brojevi = brojReplike(uloga, div);
-
+    let rezultat = { replika: "", ind: 0, pozivanje: 0 };
     while (index < tekst.length) {
       if (tekst[index] === uloga) {
         let prethodna = { uloga: "", ind: 0 };
@@ -257,21 +257,25 @@ let EditorTeksta = function (divReferenca) {
         if (prethodna !== "") {
           rezPr = vratiRepliku(div, prethodna.uloga, prethodna.ind, pozivanje);
         }
-        let rezultat = vratiRepliku(div, uloga, index, pozivanje);
-        pozivanje = rezultat.pozivanje;
-        index = rezultat.ind;
-        scena = naslovScena(div, index);
+        let pomocni = vratiRepliku(div, uloga, index, pozivanje);
 
-        povratna.push({
-          scena: scena,
-          pozicijaUTekstu: brojevi[pozivanje - 1],
-          trenutni: {
-            uloga: uloga,
-            replika: rezultat.replika,
-            prethodni: { uloga: prethodna.uloga, replika: rezPr.replika },
-            sljedeci: { uloga: sljedeca.uloga, replika: rezSlj.replika },
-          },
-        });
+        if (pomocni.replika.length > 0) {
+          let rezultat = pomocni;
+          pozivanje = rezultat.pozivanje;
+          index = rezultat.ind;
+          scena = naslovScena(div, index);
+
+          povratna.push({
+            scena: scena,
+            pozicijaUTekstu: brojevi[pozivanje - 1],
+            trenutni: {
+              uloga: uloga,
+              replika: rezultat.replika,
+              prethodni: { uloga: prethodna.uloga, replika: rezPr.replika },
+              sljedeci: { uloga: sljedeca.uloga, replika: rezSlj.replika },
+            },
+          });
+        }
       }
       index++;
     }
