@@ -1,9 +1,65 @@
-<html>
-  <head> </head>
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../css/writing.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
   <body>
-    <button id="brojRijeciBtn">Broj riječi</button>
-    <div id="editor" contenteditable="true">
-      Prvi o<b> lamija </b>paragraf. o<i>vo</i>
+    <div class="zaglavlje">
+      <img src="../strelica.svg" class="strelica" />
+      <h1>THE LAST STARSHIP (Draft 2)</h1>
+      <div class="opcije">
+        <div class="opcija">Scena</div>
+        <div class="opcija">Akcija</div>
+        <div class="opcija">Lik</div>
+        <div class="opcija">Dijalog</div>
+      </div>
+      <button class="dugme">SPASI</button>
+    </div>
+
+    <div class="sidebar">
+      <h3><b>Scene (12)</b></h3>
+      <ul class="lista">
+        <li>
+          <div class="cont">
+            <p class="p">INT. STARSHIP BRIDGE - NIGHT<br /></p>
+            <p1 class="p1">(5/8)</p1>
+          </div>
+        </li>
+        <li style="color: rgb(105, 105, 105)">
+          <div class="cont1">
+            <p class="pp">EXT. ASTEROID FIELD - DAY<br /></p>
+            <p1 class="pp1">(3/8)</p1>
+          </div>
+        </li>
+        <li style="color: rgb(105, 105, 105)">
+          <div class="cont1">
+            <p class="pp">INT. ENGINE ROOM - NIGHT<br /></p>
+            <p1 class="pp1">(2/8)</p1>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <button class="dugme1">Daj broj riječi</button>
+    <button class="dugme2">Prikazi uloge</button>
+    <button class="dugme3">Detektuj pogrešnu ulogu</button>
+    <input type="tekst" class="unos" placeholder="Unesi ulogu" />
+    <button class="dugme4">Broj linija</button>
+    <input type="tekst" class="unos" placeholder="Unesi ulogu" />
+    <button class="dugme5">Scenarij uloge</button>
+
+    <div class="rezultati"></div>
+
+    <div class="sadrzaj">
+      <h3 class="naslov" contenteditable="true">EXT. LUNAR SURFACE - DAY</h3>
+      <br />
+      <p>
+        The vast, great SILENCE of the moon. Dust motes hang impossibly still in
+        the weak light. CAPTAIN KIRA (40s, sharp, tired) walks toward a ruined
+        DOME, her footsteps crunching.
+      </p>
     </div>
     <script type="module" src="editor.js"></script>
   </body>
