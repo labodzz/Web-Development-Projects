@@ -229,9 +229,10 @@ let EditorTeksta = function (divReferenca) {
     let tekst = div.innerText.split(/\n/);
     if (!dajUloge().includes(uloga)) return [];
     let index = 0;
+    let prethodni = {};
 
     for (let i = 0; i < tekst.length; i++) {
-      if (tekst[i] === uloga) {
+      if (tekst[i] === uloga && dajUloge().includes(tekst[i])) {
         index = i;
         break;
       }
@@ -243,6 +244,18 @@ let EditorTeksta = function (divReferenca) {
 
     while (index < tekst.length) {
       if (tekst[index] === uloga) {
+        let prethodna = { uloga: "", ind: 0 };
+        prethodna = prethodnaUloga(uloga, index);
+        let rezPr = { replika: "", uloga: "" };
+        let sljedeca = { uloga: "", ind: 0 };
+        sljedeca = sljedecaUloga(uloga, index);
+        let rezSlj = { replika: "", uloga: "" };
+        if (sljedeca !== "") {
+          rezSlj = vratiRepliku(div, sljedeca.uloga, sljedeca.ind, pozivanje);
+        }
+        if (prethodna !== "") {
+          rezPr = vratiRepliku(div, prethodna.uloga, prethodna.ind, pozivanje);
+        }
         let rezultat = vratiRepliku(div, uloga, index, pozivanje);
         pozivanje = rezultat.pozivanje;
         index = rezultat.ind;
@@ -251,7 +264,12 @@ let EditorTeksta = function (divReferenca) {
         povratna.push({
           scena: scena,
           pozicijaUTekstu: pozivanje,
-          trenutni: { uloga: uloga, replika: rezultat.replika },
+          trenutni: {
+            uloga: uloga,
+            replika: rezultat.replika,
+            prethodni: { uloga: prethodna.uloga, replika: rezPr.replika },
+            sljedeci: { uloga: sljedeca.uloga, replika: rezSlj.replika },
+          },
         });
       }
       index++;
@@ -301,6 +319,30 @@ let EditorTeksta = function (divReferenca) {
     ind = i;
 
     return { replika: replika.trim(), ind: ind, pozivanje: pozivanje };
+  };
+
+  let prethodnaUloga = function (uloga, index) {
+    let tekst = div.innerText.split(/\n/);
+
+    for (let i = index - 1; i >= 0; i--) {
+      if (dajUloge().includes(tekst[i]) && tekst[i] !== uloga) {
+        return { uloga: tekst[i], ind: i };
+      } else if (dajUloge().includes(tekst[i]) && tekst[i] === uloga) return "";
+    }
+
+    return "";
+  };
+
+  let sljedecaUloga = function (uloga, index) {
+    let tekst = div.innerText.split(/\n/);
+
+    for (let i = index + 1; i < tekst.length; i++) {
+      if (dajUloge().includes(tekst[i]) && tekst[i] !== uloga) {
+        return { uloga: tekst[i], ind: i };
+      } else if (dajUloge().includes(tekst[i]) && tekst[i] === uloga) return "";
+    }
+
+    return "";
   };
 
   return {

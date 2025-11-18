@@ -29,7 +29,19 @@ window.addEventListener("DOMContentLoaded", () => {
           ", Uloga: " +
           scenarij[i].trenutni.uloga +
           ", Replika: " +
-          scenarij[i].trenutni.replika
+          scenarij[i].trenutni.replika +
+          ", Prethodni: " +
+          (scenarij[i].trenutni.prethodni
+            ? scenarij[i].trenutni.prethodni.uloga +
+              " - " +
+              scenarij[i].trenutni.prethodni.replika
+            : "Nema prethodnog") +
+          ", Sljedeći: " +
+          (scenarij[i].trenutni.sljedeci
+            ? scenarij[i].trenutni.sljedeci.uloga +
+              " - " +
+              scenarij[i].trenutni.sljedeci.replika
+            : "Nema sljedećeg")
       );
     }
   };
