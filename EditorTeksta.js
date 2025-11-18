@@ -9,20 +9,46 @@ let EditorTeksta = function (divReferenca) {
 
   let div = divReferenca;
 
+  function getCleanText(el) {
+    let html = el.innerHTML;
+
+    html = html.replace(/<br\s*\/?>/gi, "\n");
+
+    html = html.replace(/<(div|p)[^>]*>/gi, "\n");
+    html = html.replace(/<\/(div|p)>/gi, "\n");
+
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+
+    let text = tmp.textContent || "";
+
+    text = text
+      .replace(/\u00A0/g, " ")
+      .replace(/\u202F/g, " ")
+      .replace(/\u2007/g, " ")
+      .replace(/\u200B/g, "")
+      .replace(/\uFEFF/g, "")
+      .replace(/[ ]{2,}/g, " ")
+      .replace(/\n{2,}/g, "\n")
+      .trim();
+
+    return text;
+  }
+
   let dajBrojRijeci = function () {
-    let tekst = div.textContent.trim();
+    let text = getCleanText(div);
 
-    if (tekst.length === 0) return 0;
+    if (!text.trim()) return 0;
 
-    const jeBroj = (rijec) => /^\d+$/.test(rijec);
+    const tokens =
+      text.match(/[A-Za-zÀ-ž0-9]+(?:[-'\/][A-Za-zÀ-ž0-9]+)*/g) || [];
 
-    let rijeci = tekst
-      .split(/[\s.,]+/)
-      .filter((rijec) => rijec.length > 0 && !jeBroj(rijec));
+    const rijeci = tokens.filter((t) => /[A-Za-zÀ-ž]/.test(t));
 
     const znakovi = [];
     const boldZastavice = [];
     const italicZastavice = [];
+    const jeBroj = (rijec) => /^\d+$/.test(rijec);
 
     const obilazak = (cvor, jeBold, jeItalic) => {
       if (cvor.nodeType === Node.TEXT_NODE) {
@@ -132,45 +158,58 @@ let EditorTeksta = function (divReferenca) {
       for (let k = i + 1; k < uloge.length; k++) {
         let brojac1 = 0;
         let brojac2 = 0;
-        for (let j = 0; j < uloge[i].length && j < uloge[k].length; j++) {
+
+        let duza = Math.max(uloge[i].length, uloge[k].length);
+
+        for (let j = 0; j < duza; j++) {
+          let a = uloge[i][j] || "";
+          let b = uloge[k][j] || "";
+
           if (uloge[i].length === uloge[k].length && uloge[i].length <= 5) {
-            if (uloge[i][j] !== uloge[k][j]) {
-              brojac1++;
-            }
+            if (a !== b) brojac1++;
           } else {
-            if (uloge[i][j] !== uloge[k][j]) {
-              brojac2++;
-            }
+            if (a !== b) brojac2++;
           }
         }
-        if (brojac1 === 1 || brojac2 === 1 || brojac2 === 2) {
-          prviPar = uloge.filter((x) => x === uloge[i]).length;
-          drugiPar = uloge.filter((x) => x === uloge[k]).length;
-          if (prviPar >= 4 && prviPar - drugiPar >= 3) {
-            pogresnaUloga.push(uloge[k]);
-          } else if (drugiPar >= 4 && drugiPar - prviPar >= 3) {
-            pogresnaUloga.push(uloge[i]);
-          }
+
+        let slicni = brojac1 === 1 || brojac2 === 1 || brojac2 === 2;
+        if (!slicni) continue;
+
+        let prviPar = uloge.filter((x) => x === uloge[i]).length;
+        let drugiPar = uloge.filter((x) => x === uloge[k]).length;
+
+        if (prviPar >= 4 && prviPar - drugiPar >= 3) {
+          pogresnaUloga.push(uloge[k]);
+        } else if (drugiPar >= 4 && drugiPar - prviPar >= 3) {
+          pogresnaUloga.push(uloge[i]);
         }
       }
     }
 
     let pogresan = [...new Set(pogresnaUloga)];
-    console.log(pogresan);
+
     return pogresan;
   };
 
   function brojLinijaTeksta(uloga) {
-    const rijeci = div.innerText.split(/\n/);
+    const tekst = getCleanText(div);
+    const rijeci = tekst
+      .split(/\n/)
+      .map((r) => r.trim())
+      .filter((r) => r.length > 0);
+    uloga = uloga.toUpperCase();
     let broj = 0;
 
     for (let i = 0; i < rijeci.length; i++) {
-      if (rijeci[i].trim() === uloga) {
+      if (rijeci[i] === uloga) {
         for (let j = i + 1; j < rijeci.length; j++) {
-          const linija = rijeci[j].trim();
+          const linija = rijeci[j];
+
           if (linija === "" || linija.toUpperCase() === linija) break;
-          if (!/^\(.*\)$/.test(linija)) continue;
-          broj++;
+
+          if (!/^\(.*\)$/.test(linija)) {
+            broj++;
+          }
         }
       }
     }
@@ -245,6 +284,8 @@ let EditorTeksta = function (divReferenca) {
     let brojevi = brojReplike(uloga, div);
     let rezultat = { replika: "", ind: 0, pozivanje: 0 };
 
+    console.log(tekst);
+
     while (index < tekst.length) {
       if (tekst[index] === uloga) {
         let prethodna = { uloga: "", ind: 0 };
@@ -273,9 +314,9 @@ let EditorTeksta = function (divReferenca) {
             trenutni: {
               uloga: uloga,
               replika: rezultat.replika,
-              prethodni: { uloga: prethodna.uloga, replika: rezPr.replika },
-              sljedeci: { uloga: sljedeca.uloga, replika: rezSlj.replika },
             },
+            prethodni: { uloga: prethodna.uloga, replika: rezPr.replika },
+            sljedeci: { uloga: sljedeca.uloga, replika: rezSlj.replika },
           });
         }
       }

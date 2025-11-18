@@ -1,10 +1,65 @@
-import EditorTeksta from "EditorTeksta.js";
+import EditorTeksta from "/EditorTeksta.js";
 
-// Dohvat div-a
-let div = document.getElementsByClassName("sadrzaj");
+let div = document.querySelector(".sadrzaj");
 let editor = EditorTeksta(div);
+let rezultat = document.querySelector(".rezultati");
+let rez = {};
 
-let btn = document.getElementById("brojRijeciBtn");
+let btn = document.querySelector(".dugme1");
 btn.addEventListener("click", () => {
-  alert("Broj riječi: " + editor.dajBrojRijeci());
+  rez = editor.dajBrojRijeci();
+  rezultat.textContent =
+    "Broj riječi: " +
+    rez.ukupnorijeci +
+    " Boldirane riječi: " +
+    rez.boldirane +
+    " Italic riječi: " +
+    rez.italic +
+    " ";
+});
+
+let rezl = [];
+
+let btn2 = document.querySelector(".dugme2");
+btn2.addEventListener("click", () => {
+  rezl = editor.dajUloge();
+  rezultat.textContent = "Uloge: " + rezl.join(", ");
+});
+
+let rez2 = [];
+let btn3 = document.querySelector(".dugme3");
+btn3.addEventListener("click", () => {
+  rez2 = editor.pogresnaUloga();
+  rezultat.textContent = "Istaknute pogrešne uloge: " + rez2.join(", ");
+});
+
+let btn4 = document.querySelector(".dugme4");
+
+btn4.addEventListener("click", () => {
+  let uloga = document.querySelector(".unosLinije").value;
+  let rez3 = editor.brojLinijaTeksta(uloga);
+  rezultat.textContent = "Broj znakova: " + rez3;
+});
+
+let rezz = {};
+
+let btn5 = document.querySelector(".dugme5");
+
+btn5.addEventListener("click", () => {
+  let uloga = document.querySelector(".unosScenarij").value;
+  rezz = editor.scenarijUloge(uloga);
+
+  let tekst = rezz
+    .map((obj) => {
+      return `
+      Scena: ${obj.scena}, 
+      Pozicija: ${obj.pozicijaUTekstu}, 
+      Trenutni: ${obj.trenutni.uloga} - ${obj.trenutni.replika}, 
+      Prethodni: ${obj.prethodni.uloga} - ${obj.prethodni.replika}, 
+      Sljedeći: ${obj.sljedeci.uloga} - ${obj.sljedeci.replika}
+    `;
+    })
+    .join("\n");
+
+  rezultat.textContent = tekst;
 });
