@@ -223,12 +223,93 @@ let EditorTeksta = function (divReferenca) {
     return true;
   }
 
+  let scenarijUloge = function (uloga) {
+    let povratna = [];
+    uloga = uloga.toUpperCase();
+    let tekst = div.innerText.split(/\n/);
+    if (!dajUloge().includes(uloga)) return [];
+    let index = 0;
+
+    for (let i = 0; i < tekst.length; i++) {
+      if (tekst[i] === uloga) {
+        index = i;
+        break;
+      }
+    }
+
+    let pozivanje = 0;
+    let scena = "";
+    let trenutni = {};
+
+    while (index < tekst.length) {
+      if (tekst[index] === uloga) {
+        let rezultat = vratiRepliku(div, uloga, index, pozivanje);
+        pozivanje = rezultat.pozivanje;
+        index = rezultat.ind;
+        scena = naslovScena(div, index);
+
+        povratna.push({
+          scena: scena,
+          pozicijaUTekstu: pozivanje,
+          trenutni: { uloga: uloga, replika: rezultat.replika },
+        });
+      }
+      index++;
+    }
+
+    return povratna;
+  };
+
+  let naslovScena = function (div, index) {
+    let tekst = div.innerText.split(/\n/);
+    let naslov = "";
+
+    for (let i = index; i >= 0; i--) {
+      if (daLiJeNaslov(tekst[i])) {
+        naslov = tekst[i];
+        return naslov;
+      }
+    }
+    return naslov;
+  };
+
+  let daLiJeNaslov = function (linija) {
+    return /^(INT\.|EXT\.)\s+[A-Z0-9\s]+-\s+(DAY|NIGHT|AFTERNOON|MORNING|EVENING)$/.test(
+      linija
+    );
+  };
+
+  let vratiRepliku = function (div, uloga, index, pozivanje) {
+    let tekst = div.innerText.split(/\n/);
+    let replika = "";
+    let i = index;
+    let ind = 0;
+    pozivanje = pozivanje + 1;
+
+    while (
+      tekst[i] != "" &&
+      !daLiJeNaslov(tekst[i]) &&
+      ((dajUloge().includes(tekst[i]) && tekst[i] === uloga) ||
+        !dajUloge().includes(tekst[i])) &&
+      i < tekst.length
+    ) {
+      if (!dajUloge().includes(tekst[i]) && !/^\(.*\)$/.test(tekst[i])) {
+        replika += tekst[i] + " ";
+      }
+      i++;
+    }
+    ind = i;
+
+    return { replika: replika.trim(), ind: ind, pozivanje: pozivanje };
+  };
+
   return {
     dajBrojRijeci: dajBrojRijeci,
     dajUloge: dajUloge,
     pogresnaUloga: pogresnaUloga,
     brojLinijaTeksta: brojLinijaTeksta,
     formatirajTekst: formatirajTekst,
+    scenarijUloge: scenarijUloge,
   };
 };
 

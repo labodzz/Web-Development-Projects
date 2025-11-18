@@ -16,7 +16,25 @@ window.addEventListener("DOMContentLoaded", () => {
     alert("Boldirane riječi: " + brojRijeci.boldirane);
     alert("Italic riječi: " + brojRijeci.italic);
   };
+
+  let scenarijUloge = function (uloga) {
+    let scenarij = editor.scenarijUloge(uloga);
+    console.log("Scenarij za ulogu " + uloga + ":");
+    for (let i = 0; i < scenarij.length; i++) {
+      console.log(
+        "Scena: " +
+          scenarij[i].scena +
+          ", Redni broj: " +
+          scenarij[i].pozicijaUTekstu +
+          ", Uloga: " +
+          scenarij[i].trenutni.uloga +
+          ", Replika: " +
+          scenarij[i].trenutni.replika
+      );
+    }
+  };
+
   btn.addEventListener("click", () => {
-    editor.brojLinijaTeksta("LAMIJA");
+    scenarijUloge("LAMIJA");
   });
 });
