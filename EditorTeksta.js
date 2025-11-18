@@ -244,6 +244,7 @@ let EditorTeksta = function (divReferenca) {
     let trenutni = {};
     let brojevi = brojReplike(uloga, div);
     let rezultat = { replika: "", ind: 0, pozivanje: 0 };
+
     while (index < tekst.length) {
       if (tekst[index] === uloga) {
         let prethodna = { uloga: "", ind: 0 };
@@ -282,6 +283,79 @@ let EditorTeksta = function (divReferenca) {
     }
 
     return povratna;
+  };
+
+  let grupisiUloge = function () {
+    let tekst = div.innerText.split(/\n/);
+    let grupe = [];
+    let i = 0;
+    let scena = null;
+    let segmentBroj = 0;
+
+    while (i < tekst.length) {
+      let linija = tekst[i];
+
+      if (daLiJeNaslov(linija)) {
+        scena = linija;
+        segmentBroj = 0;
+        i++;
+        continue;
+      }
+
+      if (
+        scena &&
+        dajUloge().includes(linija) &&
+        vratiRepliku(div, linija, i, 0).replika.length > 0
+      ) {
+        segmentBroj++;
+        let ulogeSegmenta = [];
+        let krajSegmenta = false;
+
+        while (i < tekst.length && !krajSegmenta) {
+          let trenutna = tekst[i].trim();
+
+          if (trenutna === "") {
+            i++;
+            continue;
+          }
+
+          if (
+            daLiJeNaslov(trenutna) ||
+            dajUloge().includes(trenutna) === false
+          ) {
+            krajSegmenta = true;
+            continue;
+          }
+
+          if (dajUloge().includes(trenutna)) {
+            let replikaObj = vratiRepliku(div, trenutna, i, 0);
+            if (replikaObj.replika.length > 0) {
+              if (!ulogeSegmenta.includes(trenutna)) {
+                ulogeSegmenta.push(trenutna);
+              }
+              i = replikaObj.ind;
+              continue;
+            }
+          }
+
+          i++;
+        }
+
+        if (ulogeSegmenta.length > 0) {
+          grupe.push({
+            scena: scena,
+            segment: segmentBroj,
+            uloge: ulogeSegmenta,
+          });
+        }
+      } else {
+        i++;
+      }
+    }
+
+    console.log(grupe);
+
+    return grupe;
   };
 
   let naslovScena = function (div, index) {
@@ -378,6 +452,7 @@ let EditorTeksta = function (divReferenca) {
     brojLinijaTeksta: brojLinijaTeksta,
     formatirajTekst: formatirajTekst,
     scenarijUloge: scenarijUloge,
+    grupisiUloge: grupisiUloge,
   };
 };
 
