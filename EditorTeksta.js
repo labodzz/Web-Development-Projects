@@ -518,27 +518,71 @@ let EditorTeksta = function (divReferenca) {
   let prethodnaUloga = function (uloga, index) {
     let tekst = div.innerText.split(/\n/);
 
-    for (let i = index - 1; i >= 0; i--) {
+    let i = index - 1;
+    while (i >= 0) {
+      let linija = tekst[i].trim();
+
+      if (linija === "" || daLiJeNaslov(linija)) {
+        break;
+      }
+
       if (dajUloge().includes(tekst[i]) && tekst[i] !== uloga) {
-        return { uloga: tekst[i], ind: i };
-      } else if (dajUloge().includes(tekst[i]) && tekst[i] === uloga) return "";
+        break;
+      }
+
+      i--;
+    }
+
+    for (let j = i; j >= 0; j--) {
+      let linija = tekst[j].trim();
+
+      if (linija === "" || daLiJeNaslov(linija)) {
+        continue;
+      }
+
+      if (dajUloge().includes(tekst[j])) {
+        if (vratiRepliku(div, tekst[j], j, 0).replika.length > 0) {
+          return { uloga: tekst[j], ind: j };
+        }
+      }
     }
 
     return "";
   };
-
   let sljedecaUloga = function (uloga, index) {
     let tekst = div.innerText.split(/\n/);
 
-    for (let i = index + 1; i < tekst.length; i++) {
+    let i = index + 1;
+    while (i < tekst.length) {
+      let linija = tekst[i].trim();
+
+      if (linija === "" || daLiJeNaslov(linija)) {
+        break;
+      }
+
       if (dajUloge().includes(tekst[i]) && tekst[i] !== uloga) {
-        return { uloga: tekst[i], ind: i };
-      } else if (dajUloge().includes(tekst[i]) && tekst[i] === uloga) return "";
+        break;
+      }
+
+      i++;
+    }
+
+    for (let j = i; j < tekst.length; j++) {
+      let linija = tekst[j].trim();
+
+      if (linija === "" || daLiJeNaslov(linija)) {
+        continue;
+      }
+
+      if (dajUloge().includes(tekst[j])) {
+        if (vratiRepliku(div, tekst[j], j, 0).replika.length > 0) {
+          return { uloga: tekst[j], ind: j };
+        }
+      }
     }
 
     return "";
   };
-
   return {
     dajBrojRijeci: dajBrojRijeci,
     dajUloge: dajUloge,
