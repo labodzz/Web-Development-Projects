@@ -12,10 +12,9 @@ let EditorTeksta = function (divReferenca) {
   function getCleanText(el) {
     let html = el.innerHTML;
 
-    html = html.replace(/<br\s*\/?>/gi, "\n");
+    html = html.replace(/<\/?(div|p)[^>]*>/gi, "\n");
 
-    html = html.replace(/<(div|p)[^>]*>/gi, "\n");
-    html = html.replace(/<\/(div|p)>/gi, "\n");
+    html = html.replace(/<br\s*\/?>/gi, "\n");
 
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
@@ -27,12 +26,14 @@ let EditorTeksta = function (divReferenca) {
       .replace(/\u202F/g, " ")
       .replace(/\u2007/g, " ")
       .replace(/\u200B/g, "")
-      .replace(/\uFEFF/g, "")
-      .replace(/[ ]{2,}/g, " ")
-      .replace(/\n{2,}/g, "\n")
-      .trim();
+      .replace(/\uFEFF/g, "");
 
-    return text;
+    const linije = text.split("\n");
+    const ocisceneLinije = linije
+      .map((linija) => linija.replace(/[ ]{2,}/g, " ").trim())
+      .filter((linija) => linija.length > 0);
+
+    return ocisceneLinije.join("\n");
   }
 
   let dajBrojRijeci = function () {
@@ -114,6 +115,8 @@ let EditorTeksta = function (divReferenca) {
   let dajUloge = function () {
     const rijeci = div.innerText.split(/\n/);
 
+    console.log(rijeci);
+
     let uloge = [];
 
     for (let i = 0; i < rijeci.length; i++) {
@@ -129,6 +132,8 @@ let EditorTeksta = function (divReferenca) {
 
     uloge = uloge.filter((uloga) => /^[A-Z ]+$/.test(uloga));
     let rezultat = [...new Set(uloge)];
+
+    console.log(rezultat);
 
     return rezultat;
   };
@@ -243,22 +248,72 @@ let EditorTeksta = function (divReferenca) {
         break;
     }
 
-    const wrapper = document.createElement(tag);
-    wrapper.appendChild(range.extractContents());
+    const parent = range.commonAncestorContainer;
+    const parentElement =
+      parent.nodeType === Node.TEXT_NODE ? parent.parentElement : parent;
 
     if (
-      wrapper.childNodes.length === 1 &&
-      wrapper.firstChild.nodeName.toLowerCase() === tag
+      parentElement &&
+      parentElement.tagName &&
+      parentElement.tagName.toLowerCase() === tag &&
+      range.startContainer === range.endContainer
     ) {
-      range.insertNode(wrapper.firstChild);
-    } else {
-      range.insertNode(wrapper);
+      const selectedText = range.toString();
+      const fullText = parentElement.textContent;
+
+      if (selectedText === fullText) {
+        const textNode = document.createTextNode(fullText);
+        parentElement.parentNode.replaceChild(textNode, parentElement);
+
+        sel.removeAllRanges();
+        const noviRange = document.createRange();
+        noviRange.selectNodeContents(textNode);
+        sel.addRange(noviRange);
+        return true;
+      }
+
+      const beforeText = fullText.substring(0, range.startOffset);
+      const afterText = fullText.substring(range.endOffset);
+
+      const fragment = document.createDocumentFragment();
+
+      if (beforeText) {
+        const beforeElement = document.createElement(tag);
+        beforeElement.textContent = beforeText;
+        fragment.appendChild(beforeElement);
+      }
+
+      fragment.appendChild(document.createTextNode(selectedText));
+
+      if (afterText) {
+        const afterElement = document.createElement(tag);
+        afterElement.textContent = afterText;
+        fragment.appendChild(afterElement);
+      }
+
+      parentElement.parentNode.replaceChild(fragment, parentElement);
+      return true;
     }
 
-    sel.removeAllRanges();
-    const noviRange = document.createRange();
-    noviRange.selectNodeContents(wrapper);
-    sel.addRange(noviRange);
+    const extractedContent = range.extractContents();
+
+    const wrapper = document.createElement(tag);
+    let shouldUnformat = false;
+
+    if (
+      extractedContent.childNodes.length === 1 &&
+      extractedContent.firstChild.nodeType === Node.ELEMENT_NODE &&
+      extractedContent.firstChild.tagName.toLowerCase() === tag
+    ) {
+      shouldUnformat = true;
+    }
+
+    if (shouldUnformat) {
+      range.insertNode(document.createTextNode(extractedContent.textContent));
+    } else {
+      wrapper.appendChild(extractedContent);
+      range.insertNode(wrapper);
+    }
 
     return true;
   }
@@ -283,8 +338,6 @@ let EditorTeksta = function (divReferenca) {
     let trenutni = {};
     let brojevi = brojReplike(uloga, div);
     let rezultat = { replika: "", ind: 0, pozivanje: 0 };
-
-    console.log(tekst);
 
     while (index < tekst.length) {
       if (tekst[index] === uloga) {

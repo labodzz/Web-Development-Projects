@@ -240,13 +240,14 @@ ul {
 
 .naslov {
   color: #d68a00;
-  margin-bottom: 1.5em;
-  letter-spacing: 0.05em;
-  width: 100%;
-  font-size: 24px;
 }
 
 .sadrzaj p {
+  margin: 0;
+  padding: 0;
+}
+
+h3 {
   margin: 0;
   padding: 0;
 }

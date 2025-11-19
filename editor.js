@@ -5,6 +5,21 @@ let editor = EditorTeksta(div);
 let rezultat = document.querySelector(".rezultati");
 let rez = {};
 
+let btnBold = document.querySelector(".btnBold");
+btnBold.addEventListener("click", () => {
+  editor.formatirajTekst("bold");
+});
+
+let btnItalic = document.querySelector(".btnItalic");
+btnItalic.addEventListener("click", () => {
+  editor.formatirajTekst("italic");
+});
+
+let btnUnderline = document.querySelector(".btnUnderline");
+btnUnderline.addEventListener("click", () => {
+  editor.formatirajTekst("underline");
+});
+
 let btn = document.querySelector(".dugme1");
 btn.addEventListener("click", () => {
   rez = editor.dajBrojRijeci();
@@ -38,7 +53,7 @@ let btn4 = document.querySelector(".dugme4");
 btn4.addEventListener("click", () => {
   let uloga = document.querySelector(".unosLinije").value;
   let rez3 = editor.brojLinijaTeksta(uloga);
-  rezultat.textContent = "Broj znakova: " + rez3;
+  rezultat.textContent = "Broj linija: " + rez3;
 });
 
 let rezz = {};
@@ -61,5 +76,21 @@ btn5.addEventListener("click", () => {
     })
     .join("\n");
 
+  rezultat.textContent = tekst;
+});
+
+let rez4 = [];
+let btn6 = document.querySelector(".dugme6");
+btn6.addEventListener("click", () => {
+  rez4 = editor.grupisiUloge();
+  let tekst = rez4
+    .map((obj) => {
+      return `
+      Scena: ${obj.scena}, 
+      Segment ${obj.segment}, 
+      Uloge: ${obj.uloge.join(", ")}, 
+    `;
+    })
+    .join("\n");
   rezultat.textContent = tekst;
 });
