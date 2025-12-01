@@ -61,19 +61,41 @@ let EditorTeksta = function (divReferenca) {
           boldZastavice.push(jeBold);
           italicZastavice.push(jeItalic);
         }
-      } else if (cvor.nodeType === Node.ELEMENT_NODE) {
+        return;
+      }
+      if (cvor.nodeType === Node.ELEMENT_NODE) {
         const oznaka = cvor.tagName ? cvor.tagName.toLowerCase() : "";
         const sljedeciBold = jeBold || oznaka === "b" || oznaka === "strong";
         const sljedeciItalic = jeItalic || oznaka === "i" || oznaka === "em";
+
+        // Umetni separatore na granicama blok elemenata i <br>
+        const ubaciNoviRed = () => {
+          znakovi.push("\n");
+          boldZastavice.push(false);
+          italicZastavice.push(false);
+        };
+
+        if (oznaka === "br") {
+          ubaciNoviRed();
+          return;
+        }
+
+        const jeBlok = oznaka === "div" || oznaka === "p";
+        if (jeBlok) ubaciNoviRed();
+
         cvor.childNodes.forEach((dijete) =>
           obilazak(dijete, sljedeciBold, sljedeciItalic)
         );
+
+        if (jeBlok) ubaciNoviRed();
       }
     };
 
     obilazak(div, false, false);
 
-    const jeSeparator = (znak) => /\s|[.,!?;:()\[\]{}"'»«]/.test(znak);
+    // Separatori: whitespace i standardna interpunkcija, ali NE apostrof i NE minus
+    // (apostrof i minus su dio rijeci), i NE kosa crta jer je dozvoljena u tokenima
+    const jeSeparator = (znak) => /\s|[.,!?;:()\[\]{}"»«]/.test(znak);
 
     let brojBoldRijeci = 0;
     let brojItalicRijeci = 0;
