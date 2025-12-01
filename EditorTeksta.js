@@ -39,10 +39,12 @@ let EditorTeksta = function (divReferenca) {
   let dajBrojRijeci = function () {
     let text = getCleanText(div);
 
-    if (!text.trim()) return 0;
+    const prazno = { ukupno: 0, boldiranih: 0, italic: 0 };
+
+    if (!text.trim()) return prazno;
 
     const tokens =
-      text.match(/[A-Za-zÀ-ž0-9]+(?:[-'\/][A-Za-zÀ-ž0-9]+)*/g) || [];
+      text.match(/[A-Za-zÀ-ž0-9]+(?:[-'\/]?[A-Za-zÀ-ž0-9]+)*/g) || [];
 
     const rijeci = tokens.filter((t) => /[A-Za-zÀ-ž]/.test(t));
 
@@ -106,36 +108,46 @@ let EditorTeksta = function (divReferenca) {
     obradiRijec();
 
     return {
-      ukupnorijeci: rijeci.length,
-      boldirane: brojBoldRijeci,
+      ukupno: rijeci.length,
+      boldiranih: brojBoldRijeci,
       italic: brojItalicRijeci,
     };
   };
 
   let dajUloge = function () {
-    const rijeci = div.innerText.split(/\n/);
+    const linije = div.innerText.split(/\n/);
+    const kandidatUloge = new Set();
 
-    console.log(rijeci);
+    const jeScenskaNapomena = (linija) => {
+      const trimmed = linija.trim();
+      return trimmed.length > 0 && /^\(.*\)$/.test(trimmed);
+    };
 
-    let uloge = [];
+    const imaValidanGovorIspod = (start) => {
+      for (let i = start + 1; i < linije.length; i++) {
+        const linija = linije[i].trim();
+        if (linija.length === 0) continue;
+        if (jeScenskaNapomena(linija)) continue;
+        if (linija.toUpperCase() === linija && /^[A-Z ]+$/.test(linija)) {
+          return false;
+        }
+        return true;
+      }
+      return false;
+    };
 
-    for (let i = 0; i < rijeci.length; i++) {
-      if (
-        i != rijeci.length - 1 &&
-        rijeci[i + 1].toUpperCase() != rijeci[i + 1] &&
-        rijeci[i + 1] != " " &&
-        rijeci[i + 1].length > 0
-      ) {
-        uloge.push(rijeci[i]);
+    for (let i = 0; i < linije.length; i++) {
+      const trenutna = linije[i].trim();
+      if (!trenutna) continue;
+
+      if (trenutna === trenutna.toUpperCase() && /^[A-Z ]+$/.test(trenutna)) {
+        if (imaValidanGovorIspod(i)) {
+          kandidatUloge.add(trenutna);
+        }
       }
     }
 
-    uloge = uloge.filter((uloga) => /^[A-Z ]+$/.test(uloga));
-    let rezultat = [...new Set(uloge)];
-
-    console.log(rezultat);
-
-    return rezultat;
+    return Array.from(kandidatUloge);
   };
 
   let pogresnaUloga = function () {
@@ -227,13 +239,17 @@ let EditorTeksta = function (divReferenca) {
     if (!dozvoljeneKomande.includes(komanda)) return false;
 
     const sel = window.getSelection();
-    if (!sel.rangeCount) return false;
+    if (!sel?.rangeCount) return false;
 
     const range = sel.getRangeAt(0);
 
     if (!div.contains(range.commonAncestorContainer)) return false;
 
     if (sel.isCollapsed) return false;
+
+    if (typeof document.execCommand === "function") {
+      return document.execCommand(komanda, false, null);
+    }
 
     let tag;
     switch (komanda) {
@@ -319,64 +335,75 @@ let EditorTeksta = function (divReferenca) {
   }
 
   let scenarijUloge = function (uloga) {
-    let povratna = [];
-    uloga = uloga.toUpperCase();
-    let tekst = div.innerText.split(/\n/);
-    if (!dajUloge().includes(uloga)) return [];
-    let index = 0;
-    let prethodni = {};
+    const trazena = uloga.toUpperCase();
+    const linije = div.innerText.split(/\n/);
+    const uloge = new Set(dajUloge());
+    if (!uloge.has(trazena)) return [];
 
-    for (let i = 0; i < tekst.length; i++) {
-      if (tekst[i] === uloga && dajUloge().includes(tekst[i])) {
-        index = i;
-        break;
+    const dijalozi = [];
+    let trenutnaScena = "";
+    const pozicijePoSceni = new Map();
+
+    for (let i = 0; i < linije.length; i++) {
+      const raw = linije[i];
+      const linija = raw.trim();
+      if (!linija) continue;
+
+      if (daLiJeNaslov(linija)) {
+        trenutnaScena = linija;
+        pozicijePoSceni.set(trenutnaScena, 0);
+        continue;
       }
+
+      if (!uloge.has(linija)) continue;
+
+      const replikaObj = vratiRepliku(div, linija, i, 0);
+      if (!replikaObj.replika) {
+        i = replikaObj.ind - 1;
+        continue;
+      }
+
+      const scenaPozicija = (pozicijePoSceni.get(trenutnaScena) || 0) + 1;
+      pozicijePoSceni.set(trenutnaScena, scenaPozicija);
+
+      dijalozi.push({
+        scena: trenutnaScena || naslovScena(div, i),
+        uloga: linija,
+        replika: replikaObj.replika,
+        pozicija: scenaPozicija,
+      });
+
+      i = replikaObj.ind - 1;
     }
 
-    let pozivanje = 0;
-    let scena = "";
-    let trenutni = {};
-    let brojevi = brojReplike(uloga, div);
-    let rezultat = { replika: "", ind: 0, pozivanje: 0 };
+    const rezultat = [];
 
-    while (index < tekst.length) {
-      if (tekst[index] === uloga) {
-        let prethodna = { uloga: "", ind: 0 };
-        prethodna = prethodnaUloga(uloga, index);
-        let rezPr = { replika: "", uloga: "" };
-        let sljedeca = { uloga: "", ind: 0 };
-        sljedeca = sljedecaUloga(uloga, index);
-        let rezSlj = { replika: "", uloga: "" };
-        if (sljedeca !== "") {
-          rezSlj = vratiRepliku(div, sljedeca.uloga, sljedeca.ind, pozivanje);
-        }
-        if (prethodna !== "") {
-          rezPr = vratiRepliku(div, prethodna.uloga, prethodna.ind, pozivanje);
-        }
-        let pomocni = vratiRepliku(div, uloga, index, pozivanje);
+    for (let idx = 0; idx < dijalozi.length; idx++) {
+      const trenutni = dijalozi[idx];
+      if (trenutni.uloga !== trazena) continue;
 
-        if (pomocni.replika.length > 0) {
-          let rezultat = pomocni;
-          pozivanje = rezultat.pozivanje;
-          index = rezultat.ind;
-          scena = naslovScena(div, index);
+      const prethodni = idx > 0 ? dijalozi[idx - 1] : null;
+      const sljedeci = idx < dijalozi.length - 1 ? dijalozi[idx + 1] : null;
 
-          povratna.push({
-            scena: scena,
-            pozicijaUTekstu: brojevi[pozivanje - 1],
-            trenutni: {
-              uloga: uloga,
-              replika: rezultat.replika,
-            },
-            prethodni: { uloga: prethodna.uloga, replika: rezPr.replika },
-            sljedeci: { uloga: sljedeca.uloga, replika: rezSlj.replika },
-          });
-        }
-      }
-      index++;
+      rezultat.push({
+        scena: trenutni.scena,
+        pozicijaUTekstu: trenutni.pozicija,
+        trenutni: {
+          uloga: trazena,
+          replika: trenutni.replika,
+        },
+        prethodni:
+          prethodni && prethodni.scena === trenutni.scena
+            ? { uloga: prethodni.uloga, replika: prethodni.replika }
+            : null,
+        sljedeci:
+          sljedeci && sljedeci.scena === trenutni.scena
+            ? { uloga: sljedeci.uloga, replika: sljedeci.replika }
+            : null,
+      });
     }
 
-    return povratna;
+    return rezultat;
   };
 
   let grupisiUloge = function () {
@@ -466,7 +493,7 @@ let EditorTeksta = function (divReferenca) {
   };
 
   let daLiJeNaslov = function (linija) {
-    return /^(INT\.|EXT\.)\s+[A-Z0-9\s]+-\s+(DAY|NIGHT|AFTERNOON|MORNING|EVENING)$/.test(
+    return /^(INT\.|EXT\.)(?:\s+[A-Z0-9\s]+)?\s*-\s+(DAY|NIGHT|AFTERNOON|MORNING|EVENING)$/.test(
       linija
     );
   };
@@ -593,5 +620,10 @@ let EditorTeksta = function (divReferenca) {
     grupisiUloge: grupisiUloge,
   };
 };
+if (typeof window !== "undefined") {
+  window.EditorTeksta = EditorTeksta;
+}
 
-export default EditorTeksta;
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = EditorTeksta;
+}

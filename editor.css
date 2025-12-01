@@ -69,19 +69,48 @@
 }
 
 .rezultati {
-  margin: 0 0 1.5em 0;
+  margin: 12px 20px;
   font-family: "Inter", sans-serif;
-  font-size: 13px;
-  color: #222;
-  background: #f9f9f9;
-  padding: 8px 12px;
-  border: 1px solid #e1e1e1;
-  border-radius: 6px;
+  font-size: 14px;
+  color: #2c3e50;
+  background: #ffffff;
+  padding: 16px 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
   display: block;
-  width: 80%;
+  width: calc(100% - 40px);
   box-sizing: border-box;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  min-height: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 60px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.rezultati:empty::before {
+  content: "Rezultati će se prikazati ovdje";
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.rezultati .result-item {
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f8fafc;
+  border-left: 3px solid #5b3fff;
+  border-radius: 4px;
+}
+
+.rezultati .result-label {
+  font-weight: 600;
+  color: #5b3fff;
+  margin-right: 8px;
+}
+
+.rezultati .result-value {
+  color: #374151;
 }
 
 html {
