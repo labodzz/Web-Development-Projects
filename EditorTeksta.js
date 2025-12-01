@@ -68,7 +68,6 @@ let EditorTeksta = function (divReferenca) {
         const sljedeciBold = jeBold || oznaka === "b" || oznaka === "strong";
         const sljedeciItalic = jeItalic || oznaka === "i" || oznaka === "em";
 
-        // Umetni separatore na granicama blok elemenata i <br>
         const ubaciNoviRed = () => {
           znakovi.push("\n");
           boldZastavice.push(false);
@@ -93,9 +92,8 @@ let EditorTeksta = function (divReferenca) {
 
     obilazak(div, false, false);
 
-    // Separatori: whitespace i standardna interpunkcija, ali NE apostrof i NE minus
-    // (apostrof i minus su dio rijeci), i NE kosa crta jer je dozvoljena u tokenima
-    const jeSeparator = (znak) => /\s|[.,!?;:()\[\]{}"»«]/.test(znak);
+    const jeSeparator = (znak) =>
+      /[\s\u00A0\u202F\u2007\u200B\uFEFF]|[.,!?;:()\[\]{}"»«\/]/.test(znak);
 
     let brojBoldRijeci = 0;
     let brojItalicRijeci = 0;
