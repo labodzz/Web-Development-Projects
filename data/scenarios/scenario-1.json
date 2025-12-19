@@ -1,0 +1,21 @@
+{
+  "id": 1,
+  "title": "Lamija",
+  "content": [
+    {
+      "lineId": 1,
+      "nextLineId": 2,
+      "text": "Korisnik LAMIJA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
+    },
+    {
+      "lineId": 2,
+      "nextLineId": 3,
+      "text": "teksta linije, server mora omogućiti automatsko prelamanje (eng. wrap) linije ako tekst sadrži više od 20 riječi (definicija termina “riječ”"
+    },
+    {
+      "lineId": 3,
+      "nextLineId": null,
+      "text": "je ista kao u postavci spirale 2)."
+    }
+  ]
+}

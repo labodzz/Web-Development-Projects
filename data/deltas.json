@@ -1,0 +1,53 @@
+[
+  {
+    "scenarioId": 1,
+    "lineId": 1,
+    "userId": 1,
+    "timestamp": 1766174244,
+    "type": "update",
+    "oldText": "",
+    "newLines": [
+      {
+        "lineId": 1,
+        "text": "Ovo je novi tekst linije."
+      }
+    ]
+  },
+  {
+    "scenarioId": 1,
+    "lineId": 1,
+    "userId": 1,
+    "timestamp": 1766174397,
+    "type": "update",
+    "oldText": "Ovo je novi tekst linije.",
+    "newLines": [
+      {
+        "lineId": 1,
+        "text": "Korisnik šalje novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
+      },
+      {
+        "lineId": 2,
+        "text": "teksta linije, server mora omogućiti automatsko prelamanje (eng. wrap) linije ako tekst sadrži više od 20 riječi (definicija termina “riječ”"
+      },
+      {
+        "lineId": 3,
+        "text": "je ista kao u postavci spirale 2)."
+      }
+    ]
+  },
+  {
+    "scenarioId": 1,
+    "userId": 1,
+    "timestamp": 1766177922,
+    "type": "character_rename",
+    "oldName": "ALICE",
+    "newName": "LAMIJA",
+    "changedLines": [
+      {
+        "lineId": 1,
+        "oldText": "Korisnik ALICE novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja",
+        "newText": "Korisnik LAMIJA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
+      }
+    ]
+  }
+]
