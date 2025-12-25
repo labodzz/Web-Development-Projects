@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Test PoziviAjax</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      input,
+      button {
+        padding: 8px;
+        font-size: 16px;
+      }
+      button {
+        margin-left: 8px;
+        cursor: pointer;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 10px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test POST /api/scenarios</h1>
+
+    <input type="text" id="titleInput" placeholder="Unesi naslov scenarija" />
+    <button onclick="kreirajScenario()">Kreiraj scenarij</button>
+
+    <h3>Rezultat:</h3>
+    <pre id="result">Nema rezultata</pre>
+
+    <script src="PoziviAjax.js"></script>
+
+    <script>
+      function kreirajScenario() {
+        const title = document.getElementById("titleInput").value;
+
+        PoziviAjax.postScenario(title, function (status, data) {
+          const output = document.getElementById("result");
+
+          output.textContent =
+            "STATUS: " + status + "\n\n" + JSON.stringify(data, null, 2);
+        });
+      }
+    </script>
+  </body>
+</html>
