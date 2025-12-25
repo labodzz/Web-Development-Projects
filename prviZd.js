@@ -60,15 +60,13 @@ app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", (req, res) => {
 
   const scenarioPath = path.join(scenariosDir, `scenario-${scenarioId}.json`);
   if (!fs.existsSync(scenarioPath)) {
-    return res.status(404).json({ message: "Scenarij nije pronađen." });
+    return res.status(404).json({ message: "Scenario ne postoji!" });
   }
 
   const scenarioData = JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
   const line = scenarioData.content.find((l) => l.lineId === lineId);
   if (!line) {
-    return res
-      .status(404)
-      .json({ message: "Linija nije pronađena u scenariju." });
+    return res.status(404).json({ message: "Linija ne postoji!" });
   }
 
   let locks = [];
@@ -86,27 +84,18 @@ app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", (req, res) => {
   );
 
   if (existing && `${existing.userId}` !== `${userId}`) {
-    return res
-      .status(409)
-      .json({ message: "Linija je već zaključana od drugog korisnika." });
+    return res.status(409).json({ message: "Linija je vec zakljucana!" });
   }
 
   if (existing && `${existing.userId}` === `${userId}`) {
-    locks = locks.filter(
-      (lk) =>
-        !(
-          lk.scenarioId === scenarioId &&
-          lk.lineId === lineId &&
-          `${lk.userId}` === `${userId}`
-        )
-    );
-  } else {
-    locks = locks.filter((lk) => `${lk.userId}` !== `${userId}`);
-    locks.push({ scenarioId, lineId, userId });
+    return res.status(200).json({ message: "Linija je uspjesno zakljucana!" });
   }
 
+  locks = locks.filter((lk) => `${lk.userId}` !== `${userId}`);
+  locks.push({ scenarioId, lineId, userId });
+
   fs.writeFileSync(locksPath, JSON.stringify(locks, null, 2));
-  return res.status(200).json({ message: "Linija je uspješno zaključana." });
+  return res.status(200).json({ message: "Linija je uspjesno zakljucana!" });
 });
 
 app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
@@ -150,7 +139,6 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
 
   const currentLine = scenarioData.content[currentIndex];
 
-  // Locks validation
   let locks = [];
   if (fs.existsSync(locksPath)) {
     try {
@@ -172,7 +160,6 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
     return res.status(409).json({ message: "Linija je vec zakljucana!" });
   }
 
-  // Helper to wrap text into chunks of 20 words
   const wrapText = (text) => {
     const str = typeof text === "string" ? text : String(text ?? "");
     const words = str.trim().length ? str.trim().split(/\s+/) : [];
