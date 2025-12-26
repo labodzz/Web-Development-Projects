@@ -464,7 +464,7 @@ app.get("/api/scenarios/:scenarioId", (req, res) => {
           .json({ message: "Greška pri parsiranju JSON-a." });
       }
     }
-    res.send(objects);
+    res.status(200).json(objects);
   });
 });
 

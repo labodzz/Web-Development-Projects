@@ -2,54 +2,135 @@
 <html lang="hr">
   <head>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../css/writing.css" />
+    <link rel="stylesheet" href="editor.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
     <div class="zaglavlje">
-      <img src="../strelica.svg" class="strelica" />
       <h1>THE LAST STARSHIP (Draft 2)</h1>
-      <div class="opcije">
-        <div class="opcija">Scena</div>
-        <div class="opcija">Akcija</div>
-        <div class="opcija">Lik</div>
-        <div class="opcija">Dijalog</div>
+
+      <input
+        type="text"
+        class="naslov"
+        placeholder="Unesite naslov novog scenarija"
+      />
+      <button class="dugme" onclick="kreirajScenarij()">
+        + Kreiraj novi scenarij
+      </button>
+      <input type="number" class="broj" placeholder="ID scenarija" />
+      <button class="dugme1" onclick="otvoriScenarij()">Otvori scenarij</button>
+        <div class="lockLine">
+            <input type="number" class="idScenarija" placeholder="ID scenarija" />
+            <input type="number" class="idUser" placeholder="ID korisnika" />
+            <input
+            type="number"
+            class="redniBroj"
+            placeholder="Redni broj linije"
+            />
+            <button class="dugme2" onclick="lockLine()">Zaključaj liniju</button>
+      <div class="updateLine">
+        <input
+          type="text"
+          class="tekstLinije"
+          placeholder="Unesite novi tekst linije"
+        />
+        <input type="number" class="idScenarija" placeholder="ID scenarija" />
+        <input type="number" class="idUser" placeholder="ID korisnika" />
+        <input
+          type="number"
+          class="redniBroj"
+          placeholder="Redni broj linije"
+        />
+        <button class="dugme2" onclick="updateLine()">Ažuriraj liniju</button>
       </div>
-      <button class="dugme">SPASI</button>
     </div>
 
     <div class="sidebar">
       <h3><b>Scene (12)</b></h3>
-      <ul class="lista">
-        <li>
-          <div class="cont">
-            <p class="p">INT. STARSHIP BRIDGE - NIGHT<br /></p>
-            <p1 class="p1">(5/8)</p1>
-          </div>
-        </li>
-        <li style="color: rgb(105, 105, 105)">
-          <div class="cont1">
-            <p class="pp">EXT. ASTEROID FIELD - DAY<br /></p>
-            <p1 class="pp1">(3/8)</p1>
-          </div>
-        </li>
-        <li style="color: rgb(105, 105, 105)">
-          <div class="cont1">
-            <p class="pp">INT. ENGINE ROOM - NIGHT<br /></p>
-            <p1 class="pp1">(2/8)</p1>
-          </div>
-        </li>
-      </ul>
     </div>
 
     <div class="sadrzaj">
-      <h3 class="naslov">EXT. LUNAR SURFACE - DAY</h3>
+      <h3 class="naslov"></h3>
       <br />
-      <p>
-        The vast, great SILENCE of the moon. Dust motes hang impossibly still in
-        the weak light. CAPTAIN KIRA (40s, sharp, tired) walks toward a ruined
-        DOME, her footsteps crunching.
-      </p>
+      <p></p>
     </div>
+
+    <script src="PoziviAjax.js"></script>
+    <script>
+      function kreirajScenarij() {
+        const titleInput = document.querySelector("input.naslov");
+        const title = titleInput ? titleInput.value : "";
+
+        PoziviAjax.postScenario(title, function (status, response) {
+          if (status === 201 && response && response.title) {
+          } else {
+            alert("Došlo je do pogreške prilikom kreiranja scenarija.");
+          }
+        });
+      }
+      function otvoriScenarij() {
+        const idInput = document.querySelector("input.broj");
+        const id = idInput ? idInput.value : "";
+        let text = "";
+
+        PoziviAjax.getScenario(id, function (status, response) {
+          if (status === 200 && response) {
+            const naslovElement = document.querySelector(".sadrzaj .naslov");
+            const paragrafElement = document.querySelector(".sadrzaj p");
+
+            if (naslovElement) {
+              naslovElement.textContent = response.title || "Nema naslova";
+            }
+            if (paragrafElement) {
+              for (let i = 0; i < response.content.length; i++) {
+                text += response.content[i].text + "\n\n";
+              }
+              paragrafElement.textContent = text;
+            }
+          } else {
+            alert("Došlo je do pogreške prilikom otvaranja scenarija.");
+          }
+        });
+      }
+      function lockLine() {
+        let lineId = document.querySelector("div.lockLine input.redniBroj").value;
+        let scenarioId = document.querySelector("div.lockLine input.idScenarija").value;
+        let userId = document.querySelector("div.lockLine input.idUser").value;
+        PoziviAjax.lockLine(
+          scenarioId,
+          lineId,
+          userId,
+          function (status, response) {
+            if (status === 200 && response) {
+              alert("Linija je uspješno zaključana.");
+            } else {
+              alert("Došlo je do pogreške prilikom zaključavanja linije.");
+            }
+          }
+        );
+      }
+
+      function updateLine() {
+        let lineId = document.querySelector("div.updateLine input.redniBroj").value;
+        let scenarioId = document.querySelector("div.updateLine input.idScenarija").value;
+        let userId = document.querySelector("div.updateLine input.idUser").value;
+        let newText = document.querySelector("div.updateLine input.tekstLinije").value;
+        PoziviAjax.updateLine(
+          scenarioId,
+          lineId,
+          userId,
+          newText,
+          function (status, response) {
+            if (status === 200 && response) {
+              alert("Linija je uspješno ažurirana.");
+              document.querySelector("input.broj").value = scenarioId;
+              otvoriScenarij();
+            } else {
+              alert("Linija nije ažurirana. Došlo je do pogreške.");
+            }
+          }
+        );
+      }
+    </script>
   </body>
 </html>
