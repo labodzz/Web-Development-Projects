@@ -8,7 +8,10 @@ const fs = require("fs");
 const path = require("path");
 
 const scenariosDir = path.join(__dirname, "data", "scenarios");
-const locksPath = path.join(__dirname, "data", "locks.json");
+
+const lineLocksByKey = new Map();
+const lineLockByUser = new Map();
+const characterLocksByKey = new Map();
 
 if (!fs.existsSync(scenariosDir))
   fs.mkdirSync(scenariosDir, { recursive: true });
@@ -39,20 +42,21 @@ app.post("/api/scenarios", (req, res) => {
   const filePath = path.join(scenariosDir, `scenario-${newId}.json`);
   fs.writeFileSync(filePath, JSON.stringify(newScenario, null, 2));
 
-  res.status(201).json(newScenario);
+  res.status(200).json(newScenario);
 });
 
 app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const lineId = Number(req.params.lineId);
   const userId = req.body.userId;
+  const uid = String(userId);
 
   if (!Number.isInteger(scenarioId) || !Number.isInteger(lineId)) {
     return res
       .status(400)
       .json({ message: "Neispravan scenarioId ili lineId." });
   }
-  if (!userId || `${userId}`.trim() === "") {
+  if (!userId || uid.trim() === "") {
     return res
       .status(400)
       .json({ message: "Nedostaje userId u tijelu zahtjeva." });
@@ -69,32 +73,27 @@ app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", (req, res) => {
     return res.status(404).json({ message: "Linija ne postoji!" });
   }
 
-  let locks = [];
-  if (fs.existsSync(locksPath)) {
-    try {
-      locks = JSON.parse(fs.readFileSync(locksPath, "utf8"));
-      if (!Array.isArray(locks)) locks = [];
-    } catch (_) {
-      locks = [];
-    }
-  }
-
-  const existing = locks.find(
-    (lk) => lk.scenarioId === scenarioId && lk.lineId === lineId
-  );
-
-  if (existing && `${existing.userId}` !== `${userId}`) {
+  const lockKey = `${scenarioId}:${lineId}`;
+  const existingUser = lineLocksByKey.get(lockKey);
+  if (existingUser && existingUser !== uid) {
     return res.status(409).json({ message: "Linija je vec zakljucana!" });
   }
 
-  if (existing && `${existing.userId}` === `${userId}`) {
+  if (existingUser && existingUser === uid) {
     return res.status(200).json({ message: "Linija je uspjesno zakljucana!" });
   }
 
-  locks = locks.filter((lk) => `${lk.userId}` !== `${userId}`);
-  locks.push({ scenarioId, lineId, userId });
+  const previous = lineLockByUser.get(uid);
+  if (previous) {
+    const prevKey = `${previous.scenarioId}:${previous.lineId}`;
+    const prevUser = lineLocksByKey.get(prevKey);
+    if (prevUser === uid) {
+      lineLocksByKey.delete(prevKey);
+    }
+  }
 
-  fs.writeFileSync(locksPath, JSON.stringify(locks, null, 2));
+  lineLocksByKey.set(lockKey, uid);
+  lineLockByUser.set(uid, { scenarioId, lineId });
   return res.status(200).json({ message: "Linija je uspjesno zakljucana!" });
 });
 
@@ -102,6 +101,7 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const lineId = Number(req.params.lineId);
   const userId = req.body.userId;
+  const uid = String(userId);
   const newTextArr = req.body.newText;
 
   if (!Number.isInteger(scenarioId) || !Number.isInteger(lineId)) {
@@ -109,7 +109,7 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
       .status(400)
       .json({ message: "Neispravan scenarioId ili lineId." });
   }
-  if (!userId || `${userId}`.trim() === "") {
+  if (!userId || uid.trim() === "") {
     return res
       .status(400)
       .json({ message: "Nedostaje userId u tijelu zahtjeva." });
@@ -139,24 +139,12 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
 
   const currentLine = scenarioData.content[currentIndex];
 
-  let locks = [];
-  if (fs.existsSync(locksPath)) {
-    try {
-      locks = JSON.parse(fs.readFileSync(locksPath, "utf8"));
-      if (!Array.isArray(locks)) locks = [];
-    } catch (_) {
-      locks = [];
-    }
-  }
-
-  const lockEntry = locks.find(
-    (lk) => lk.scenarioId === scenarioId && lk.lineId === lineId
-  );
-
-  if (!lockEntry) {
+  const lockKey = `${scenarioId}:${lineId}`;
+  const lockedBy = lineLocksByKey.get(lockKey);
+  if (!lockedBy) {
     return res.status(409).json({ message: "Linija nije zakljucana!" });
   }
-  if (`${lockEntry.userId}` !== `${userId}`) {
+  if (lockedBy !== uid) {
     return res.status(409).json({ message: "Linija je vec zakljucana!" });
   }
 
@@ -222,30 +210,42 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
     }
   }
 
-  const deltaEntry = {
+  const timestamp = Math.floor(Date.now() / 1000);
+
+  deltas.push({
     scenarioId,
-    lineId,
-    userId,
-    timestamp: Math.floor(Date.now() / 1000),
     type: "line_update",
-    oldText,
-    newLines: [
-      { lineId, text: currentLine.text },
-      ...newLines.map((nl) => ({ lineId: nl.lineId, text: nl.text })),
-    ],
-  };
-  deltas.push(deltaEntry);
+    lineId: currentLine.lineId,
+    nextLineId: currentLine.nextLineId ?? null,
+    content: currentLine.text,
+    timestamp,
+  });
+
+  for (const nl of newLines) {
+    deltas.push({
+      scenarioId,
+      type: "line_update",
+      lineId: nl.lineId,
+      nextLineId: nl.nextLineId ?? null,
+      content: nl.text,
+      timestamp,
+    });
+  }
   fs.writeFileSync(deltasPath, JSON.stringify(deltas, null, 2));
 
-  locks = locks.filter(
-    (lk) =>
-      !(
-        lk.scenarioId === scenarioId &&
-        lk.lineId === lineId &&
-        `${lk.userId}` === `${userId}`
-      )
-  );
-  fs.writeFileSync(locksPath, JSON.stringify(locks, null, 2));
+  // Unlock (RAM)
+  const current = lineLockByUser.get(uid);
+  if (
+    current &&
+    current.scenarioId === scenarioId &&
+    current.lineId === lineId
+  ) {
+    lineLockByUser.delete(uid);
+  }
+  const stillLockedBy = lineLocksByKey.get(lockKey);
+  if (stillLockedBy === uid) {
+    lineLocksByKey.delete(lockKey);
+  }
 
   return res.status(200).json({ message: "Linija je uspjesno azurirana!" });
 });
@@ -254,52 +254,34 @@ app.post("/api/scenarios/:scenarioId/characters/lock", (req, res) => {
   let scenarioId = Number(req.params.scenarioId);
   let userId = req.body.userId;
   let characterName = req.body.characterName;
-  let pathFile = path.join(__dirname, "data", "locks.json");
-  let locks = [];
+  const uid = String(userId);
+  if (!Number.isInteger(scenarioId)) {
+    return res.status(400).json({ message: "Neispravan scenarioId." });
+  }
+  if (!userId || uid.trim() === "") {
+    return res
+      .status(400)
+      .json({ message: "Nedostaje userId u tijelu zahtjeva." });
+  }
+  if (!characterName || `${characterName}`.trim() === "") {
+    return res
+      .status(400)
+      .json({ message: "Nedostaje characterName u tijelu zahtjeva." });
+  }
 
-  fs.readFile(pathFile, "utf8", (err, data) => {
-    if (err) {
-      return res.status(500).json({ message: "Greška pri čitanju datoteke." });
-    }
-    if (data) {
-      try {
-        locks = JSON.parse(data);
-        if (!Array.isArray(locks)) locks = [];
-      } catch (_) {
-        locks = [];
-      }
-    }
-    if (
-      fs.existsSync(
-        path.join(__dirname, "data", "scenarios", `scenario-${scenarioId}.json`)
-      ) === false
-    ) {
-      return res.status(404).json({ message: "Scenarij ne postoji!" });
-    }
+  if (!fs.existsSync(path.join(scenariosDir, `scenario-${scenarioId}.json`))) {
+    return res.status(404).json({ message: "Scenario ne postoji!" });
+  }
 
-    const existingLock = locks.find(
-      (lock) =>
-        lock.scenarioId === scenarioId && lock.characterName === characterName
-    );
+  const key = `${scenarioId}:${String(characterName)}`;
+  if (characterLocksByKey.has(key)) {
+    return res
+      .status(409)
+      .json({ message: "Konflikt! Ime lika je vec zakljucano!" });
+  }
 
-    if (existingLock) {
-      return res
-        .status(409)
-        .json({ message: "Konflikt! Ime lika je vec zakljucano!" });
-    }
-
-    locks.push({ scenarioId, userId, characterName });
-    fs.writeFile(pathFile, JSON.stringify(locks, null, 2), (err) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ message: "Greška pri pisanju datoteke." });
-      }
-      return res
-        .status(200)
-        .json({ message: "Ime lika je uspjesno zakljucano!" });
-    });
-  });
+  characterLocksByKey.set(key, uid);
+  return res.status(200).json({ message: "Ime lika je uspjesno zakljucano!" });
 });
 
 app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
@@ -307,11 +289,12 @@ app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
   const userId = req.body.userId;
   const oldName = req.body.oldName;
   const newName = req.body.newName;
+  const uid = String(userId);
 
   if (!Number.isInteger(scenarioId)) {
     return res.status(400).json({ message: "Neispravan scenarioId." });
   }
-  if (!userId || `${userId}`.trim() === "") {
+  if (!userId || uid.trim() === "") {
     return res
       .status(400)
       .json({ message: "Nedostaje userId u tijelu zahtjeva." });
@@ -327,13 +310,6 @@ app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
       .json({ message: "Nedostaju oldName ili newName u tijelu zahtjeva." });
   }
 
-  const upperRegex = /^[A-ZČĆŽŠĐ]+$/;
-  if (!upperRegex.test(oldName) || !upperRegex.test(newName)) {
-    return res
-      .status(400)
-      .json({ message: "Ime lika mora biti velikim slovima!" });
-  }
-
   const scenarioPath = path.join(
     __dirname,
     "data",
@@ -344,24 +320,12 @@ app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
     return res.status(404).json({ message: "Scenario ne postoji!" });
   }
 
-  const locksFile = path.join(__dirname, "data", "locks.json");
-  let locks = [];
-  if (fs.existsSync(locksFile)) {
-    try {
-      const raw = fs.readFileSync(locksFile, "utf8");
-      locks = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(locks)) locks = [];
-    } catch (_) {
-      locks = [];
-    }
-  }
-  const charLock = locks.find(
-    (lk) => lk.scenarioId === scenarioId && lk.characterName === oldName
-  );
-  if (!charLock) {
+  const charKey = `${scenarioId}:${oldName}`;
+  const lockedBy = characterLocksByKey.get(charKey);
+  if (!lockedBy) {
     return res.status(409).json({ message: "Ime lika nije zakljucano!" });
   }
-  if (`${charLock.userId}` !== `${userId}`) {
+  if (lockedBy !== uid) {
     return res.status(409).json({ message: "Ime lika je vec zakljucano!" });
   }
 
@@ -375,7 +339,6 @@ app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
     return res.status(404).json({ message: "Scenario ne postoji!" });
   }
 
-  let changedLines = [];
   for (let i = 0; i < scenarioObj.content.length; i++) {
     const line = scenarioObj.content[i];
     const before = line.text;
@@ -384,11 +347,6 @@ app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
       const after = before.split(oldName).join(newName);
       if (after !== before) {
         line.text = after;
-        changedLines.push({
-          lineId: line.lineId,
-          oldText: before,
-          newText: after,
-        });
       }
     }
   }
@@ -412,30 +370,23 @@ app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
   }
   deltas.push({
     scenarioId,
-    userId,
-    timestamp: Math.floor(Date.now() / 1000),
     type: "char_rename",
     oldName,
     newName,
-    changedLines,
+    timestamp: Math.floor(Date.now() / 1000),
   });
   try {
     fs.writeFileSync(deltasPath, JSON.stringify(deltas, null, 2));
   } catch (e) {}
 
-  try {
-    locks = locks.filter(
-      (lk) =>
-        !(
-          lk.scenarioId === scenarioId &&
-          lk.characterName === oldName &&
-          `${lk.userId}` === `${userId}`
-        )
-    );
-    fs.writeFileSync(locksFile, JSON.stringify(locks, null, 2));
-  } catch (_) {}
+  const still = characterLocksByKey.get(charKey);
+  if (still === uid) {
+    characterLocksByKey.delete(charKey);
+  }
 
-  return res.status(200).json({ message: "Ime lika je uspjesno azurirano!" });
+  return res
+    .status(200)
+    .json({ message: "Ime lika je uspjesno promijenjeno!" });
 });
 
 app.get("/api/scenarios/:scenarioId", (req, res) => {
@@ -482,6 +433,11 @@ app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
   }
   const sinceTs = Number.isFinite(since) ? since : 0;
 
+  const scenarioPath = path.join(scenariosDir, `scenario-${scenarioId}.json`);
+  if (!fs.existsSync(scenarioPath)) {
+    return res.status(404).json({ message: "Scenario ne postoji!" });
+  }
+
   const deltasPath = path.join(__dirname, "data", "deltas.json");
   let deltasRaw = [];
   if (fs.existsSync(deltasPath)) {
@@ -494,14 +450,11 @@ app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
     }
   }
 
-  const scenarioPath = path.join(scenariosDir, `scenario-${scenarioId}.json`);
   let scenarioObj = null;
-  if (fs.existsSync(scenarioPath)) {
-    try {
-      scenarioObj = JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
-    } catch (_) {
-      scenarioObj = null;
-    }
+  try {
+    scenarioObj = JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
+  } catch (_) {
+    scenarioObj = null;
   }
 
   const result = [];
@@ -511,6 +464,27 @@ app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
       continue;
 
     if (entry.type === "line_update" || entry.type === "update") {
+      if (typeof entry.lineId === "number" && "content" in entry) {
+        let nextLineId = entry.nextLineId ?? null;
+        if (scenarioObj && Array.isArray(scenarioObj.content)) {
+          const lineObj = scenarioObj.content.find(
+            (l) => l.lineId === entry.lineId
+          );
+          if (lineObj) nextLineId = lineObj.nextLineId ?? null;
+        }
+        result.push({
+          type: "line_update",
+          lineId: entry.lineId,
+          nextLineId,
+          content:
+            typeof entry.content === "string"
+              ? entry.content
+              : String(entry.content ?? ""),
+          timestamp: entry.timestamp,
+        });
+        continue;
+      }
+
       const changed = Array.isArray(entry.newLines) ? entry.newLines : [];
       for (const ln of changed) {
         let nextLineId = null;
@@ -524,7 +498,8 @@ app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
           type: "line_update",
           lineId: ln.lineId,
           nextLineId,
-          content: ln.text,
+          content:
+            typeof ln.text === "string" ? ln.text : String(ln.text ?? ""),
           timestamp: entry.timestamp,
         });
       }

@@ -1,99 +1,95 @@
 [
   {
     "scenarioId": 1,
+    "type": "line_update",
     "lineId": 1,
-    "userId": 1,
-    "timestamp": 1766174244,
-    "type": "update",
-    "oldText": "",
-    "newLines": [
-      {
-        "lineId": 1,
-        "text": "Ovo je novi tekst linije."
-      }
-    ]
+    "nextLineId": 2,
+    "content": "Ovo je novi tekst linije.",
+    "timestamp": 1766174244
   },
   {
     "scenarioId": 1,
+    "type": "line_update",
     "lineId": 1,
-    "userId": 1,
-    "timestamp": 1766174397,
-    "type": "update",
-    "oldText": "Ovo je novi tekst linije.",
-    "newLines": [
-      {
-        "lineId": 1,
-        "text": "Korisnik šalje novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
-      },
-      {
-        "lineId": 2,
-        "text": "teksta linije, server mora omogućiti automatsko prelamanje (eng. wrap) linije ako tekst sadrži više od 20 riječi (definicija termina “riječ”"
-      },
-      {
-        "lineId": 3,
-        "text": "je ista kao u postavci spirale 2)."
-      }
-    ]
+    "nextLineId": 2,
+    "content": "Korisnik šalje novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja",
+    "timestamp": 1766174397
   },
   {
     "scenarioId": 1,
-    "userId": 1,
-    "timestamp": 1766177922,
-    "type": "character_rename",
+    "type": "line_update",
+    "lineId": 2,
+    "nextLineId": 4,
+    "content": "teksta linije, server mora omogućiti automatsko prelamanje (eng. wrap) linije ako tekst sadrži više od 20 riječi (definicija termina “riječ”",
+    "timestamp": 1766174397
+  },
+  {
+    "scenarioId": 1,
+    "type": "line_update",
+    "lineId": 3,
+    "nextLineId": null,
+    "content": "je ista kao u postavci spirale 2).",
+    "timestamp": 1766174397
+  },
+  {
+    "scenarioId": 1,
+    "type": "char_rename",
     "oldName": "ALICE",
     "newName": "LAMIJA",
-    "changedLines": [
-      {
-        "lineId": 1,
-        "oldText": "Korisnik ALICE novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja",
-        "newText": "Korisnik LAMIJA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
-      }
-    ]
+    "timestamp": 1766177922
   },
   {
     "scenarioId": 1,
-    "lineId": 2,
-    "userId": 1,
-    "timestamp": 1766766929,
     "type": "line_update",
-    "oldText": "teksta linije, server mora omogućiti automatsko prelamanje (eng. wrap) linije ako tekst sadrži više od 20 riječi (definicija termina “riječ”",
-    "newLines": [
-      {
-        "lineId": 2,
-        "text": "Ovo je novi tekst linije."
-      }
-    ]
+    "lineId": 2,
+    "nextLineId": 4,
+    "content": "Ovo je novi tekst linije.",
+    "timestamp": 1766766929
   },
   {
     "scenarioId": 1,
-    "lineId": 2,
-    "userId": 1,
-    "timestamp": 1766767010,
     "type": "line_update",
-    "oldText": "Ovo je novi tekst linije.",
-    "newLines": [
-      {
-        "lineId": 2,
-        "text": "Ovo je novi tekst linije."
-      },
-      {
-        "lineId": 4,
-        "text": "e pa ne moze"
-      }
-    ]
+    "lineId": 2,
+    "nextLineId": 4,
+    "content": "Ovo je novi tekst linije.",
+    "timestamp": 1766767010
   },
   {
     "scenarioId": 1,
-    "lineId": 2,
-    "userId": "1",
-    "timestamp": 1766767176,
     "type": "line_update",
-    "oldText": "Ovo je novi tekst linije.",
-    "newLines": [
-      {
-        "lineId": 2,
-        "text": "JA SAM TU"
-      }
-    ]
+    "lineId": 4,
+    "nextLineId": 3,
+    "content": "e pa ne moze",
+    "timestamp": 1766767010
+  },
+  {
+    "scenarioId": 1,
+    "type": "line_update",
+    "lineId": 2,
+    "nextLineId": 4,
+    "content": "JA SAM TU",
+    "timestamp": 1766767176
+  },
+  {
+    "scenarioId": 1,
+    "timestamp": 1766784087,
+    "type": "char_rename",
+    "oldName": "ALICIA",
+    "newName": "LAMIJA"
+  },
+  {
+    "scenarioId": 1,
+    "timestamp": 1766784258,
+    "type": "char_rename",
+    "oldName": "LAMIJA",
+    "newName": "ALICIA"
+  },
+  {
+    "scenarioId": 1,
+    "type": "line_update",
+    "lineId": 3,
+    "nextLineId": null,
+    "content": "Nova linija",
+    "timestamp": 1766784562
   }
 ]

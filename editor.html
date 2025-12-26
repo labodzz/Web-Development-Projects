@@ -7,7 +7,7 @@
   </head>
   <body>
     <div class="zaglavlje">
-      <h1>THE LAST STARSHIP (Draft 2)</h1>
+      <h1>EDITOR</h1>
 
       <div class="zaglavlje-controls">
         <div class="control-group">
@@ -63,17 +63,45 @@
           />
           <button class="dugme2" onclick="updateLine()">Ažuriraj liniju</button>
         </div>
+
+        <div class="control-group updateCharacter">
+          <input type="number" class="idScenarija" placeholder="ID scenarija" />
+          <input type="number" class="idUser" placeholder="ID korisnika" />
+          <input type="text" class="oldName" placeholder="Staro ime" />
+          <input type="text" class="newName" placeholder="Novo ime" />
+          <button class="dugme2" onclick="updateCharacter()">
+            Ažuriraj ime lika
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="sidebar">
-      <h3><b>Scene (12)</b></h3>
-    </div>
+    <div class="main">
+      <div class="sidebar">
+        <h4 class="deltasTitle">Deltas file</h4>
+        <div class="deltasOutput" aria-label="Scenario deltas"></div>
+        <div class="sidebarBottom">
+          <div class="control-group getDeltas">
+            <input
+              type="number"
+              class="idScenarija"
+              placeholder="ID scenarija"
+            />
+            <input
+              type="number"
+              class="since"
+              placeholder="Since (timestamp)"
+            />
+            <button class="dugme2" onclick="getDeltas()">Dohvati delte</button>
+          </div>
+        </div>
+      </div>
 
-    <div class="sadrzaj">
-      <h3 class="naslov"></h3>
-      <br />
-      <div class="lines" aria-label="Scenario lines"></div>
+      <div class="sadrzaj">
+        <h3 class="naslov"></h3>
+        <br />
+        <div class="lines" aria-label="Scenario lines"></div>
+      </div>
     </div>
 
     <script src="PoziviAjax.js"></script>
@@ -83,11 +111,83 @@
         const title = titleInput ? titleInput.value : "";
 
         PoziviAjax.postScenario(title, function (status, response) {
-          if (status === 201 && response && response.title) {
+          if (
+            (status === 200 || status === 201) &&
+            response &&
+            response.title
+          ) {
+            alert(
+              "Uspješno kreiran scenarij: " +
+                response.title +
+                " (ID: " +
+                response.id +
+                ")"
+            );
           } else {
             alert("Došlo je do pogreške prilikom kreiranja scenarija.");
           }
         });
+      }
+
+      function formatUnixTs(ts) {
+        if (!(typeof ts === "number" && Number.isFinite(ts))) return "";
+        try {
+          return new Date(ts * 1000).toLocaleString("hr-HR");
+        } catch (_) {
+          return String(ts);
+        }
+      }
+
+      function renderDeltas(outEl, response) {
+        if (!outEl) return;
+        outEl.innerHTML = "";
+
+        const deltas =
+          response && Array.isArray(response.deltas) ? response.deltas : [];
+        if (deltas.length === 0) {
+          outEl.textContent = "Nema delti za prikaz.";
+          return;
+        }
+
+        const list = document.createElement("div");
+        list.className = "deltasList";
+
+        for (const d of deltas) {
+          const item = document.createElement("div");
+          item.className = "deltaItem";
+
+          const header = document.createElement("div");
+          header.className = "deltaHeader";
+          const when = formatUnixTs(d.timestamp);
+          header.textContent = `${when ? when + " • " : ""}${
+            d.type || "delta"
+          }`;
+
+          const body = document.createElement("div");
+          body.className = "deltaBody";
+
+          if (d.type === "line_update") {
+            const next =
+              d.nextLineId === null || d.nextLineId === undefined
+                ? "null"
+                : String(d.nextLineId);
+            const content =
+              typeof d.content === "string"
+                ? d.content
+                : String(d.content ?? "");
+            body.textContent = `Linija ${d.lineId} (next: ${next}): ${content}`;
+          } else if (d.type === "char_rename") {
+            body.textContent = `Preimenovanje lika: ${d.oldName} → ${d.newName}`;
+          } else {
+            body.textContent = "Nepoznata delta.";
+          }
+
+          item.appendChild(header);
+          item.appendChild(body);
+          list.appendChild(item);
+        }
+
+        outEl.appendChild(list);
       }
       function otvoriScenarij() {
         const idInput = document.querySelector("input.broj");
@@ -202,7 +302,69 @@
         wire(document.querySelector("div.lockLine input.idScenarija"));
         wire(document.querySelector("div.updateLine input.idScenarija"));
         wire(document.querySelector("div.lockCharacter input.idScenarija"));
+        wire(document.querySelector("div.updateCharacter input.idScenarija"));
+        wire(document.querySelector("div.getDeltas input.idScenarija"));
       })();
+
+      function updateCharacter() {
+        const scenarioId = document.querySelector(
+          "div.updateCharacter input.idScenarija"
+        ).value;
+        const userId = document.querySelector(
+          "div.updateCharacter input.idUser"
+        ).value;
+        const oldName = document.querySelector(
+          "div.updateCharacter input.oldName"
+        ).value;
+        const newName = document.querySelector(
+          "div.updateCharacter input.newName"
+        ).value;
+
+        PoziviAjax.updateCharacter(
+          scenarioId,
+          userId,
+          oldName,
+          newName,
+          function (status, response) {
+            if (status === 200 && response) {
+              alert(response.message || "Ime lika je uspješno ažurirano!");
+              document.querySelector("input.broj").value = scenarioId;
+              otvoriScenarij();
+            } else {
+              const msg =
+                response && response.message
+                  ? response.message
+                  : "Došlo je do pogreške prilikom ažuriranja imena lika.";
+              alert(msg);
+            }
+          }
+        );
+      }
+
+      function getDeltas() {
+        const scenarioId = document.querySelector(
+          "div.getDeltas input.idScenarija"
+        ).value;
+        const sinceVal = document.querySelector(
+          "div.getDeltas input.since"
+        ).value;
+        const since = sinceVal ? sinceVal : 0;
+
+        PoziviAjax.getDeltas(scenarioId, since, function (status, response) {
+          const out = document.querySelector(".deltasOutput");
+          if (!out) return;
+
+          if (status === 200 && response) {
+            renderDeltas(out, response);
+          } else {
+            const msg =
+              response && response.message
+                ? response.message
+                : "Došlo je do pogreške prilikom dohvata delti.";
+            out.textContent = msg;
+          }
+        });
+      }
       function lockLine() {
         let lineId = document.querySelector(
           "div.lockLine input.redniBroj"

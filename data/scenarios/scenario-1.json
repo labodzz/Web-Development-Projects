@@ -5,7 +5,7 @@
     {
       "lineId": 1,
       "nextLineId": 2,
-      "text": "Korisnik LAMIJA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
+      "text": "Korisnik ALICIA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
     },
     {
       "lineId": 2,
@@ -20,7 +20,7 @@
     {
       "lineId": 3,
       "nextLineId": null,
-      "text": "je ista kao u postavci spirale 2)."
+      "text": "Nova linija"
     }
   ]
 }
