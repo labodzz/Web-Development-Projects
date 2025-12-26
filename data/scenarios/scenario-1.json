@@ -9,8 +9,13 @@
     },
     {
       "lineId": 2,
+      "nextLineId": 4,
+      "text": "JA SAM TU"
+    },
+    {
+      "lineId": 4,
       "nextLineId": 3,
-      "text": "teksta linije, server mora omogućiti automatsko prelamanje (eng. wrap) linije ako tekst sadrži više od 20 riječi (definicija termina “riječ”"
+      "text": "e pa ne moze"
     },
     {
       "lineId": 3,

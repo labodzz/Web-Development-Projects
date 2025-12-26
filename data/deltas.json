@@ -49,5 +49,51 @@
         "newText": "Korisnik LAMIJA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
       }
     ]
+  },
+  {
+    "scenarioId": 1,
+    "lineId": 2,
+    "userId": 1,
+    "timestamp": 1766766929,
+    "type": "line_update",
+    "oldText": "teksta linije, server mora omogućiti automatsko prelamanje (eng. wrap) linije ako tekst sadrži više od 20 riječi (definicija termina “riječ”",
+    "newLines": [
+      {
+        "lineId": 2,
+        "text": "Ovo je novi tekst linije."
+      }
+    ]
+  },
+  {
+    "scenarioId": 1,
+    "lineId": 2,
+    "userId": 1,
+    "timestamp": 1766767010,
+    "type": "line_update",
+    "oldText": "Ovo je novi tekst linije.",
+    "newLines": [
+      {
+        "lineId": 2,
+        "text": "Ovo je novi tekst linije."
+      },
+      {
+        "lineId": 4,
+        "text": "e pa ne moze"
+      }
+    ]
+  },
+  {
+    "scenarioId": 1,
+    "lineId": 2,
+    "userId": "1",
+    "timestamp": 1766767176,
+    "type": "line_update",
+    "oldText": "Ovo je novi tekst linije.",
+    "newLines": [
+      {
+        "lineId": 2,
+        "text": "JA SAM TU"
+      }
+    ]
   }
 ]

@@ -57,7 +57,8 @@ const PoziviAjax = (function () {
           callback(ajax.status, response);
         }
       };
-      ajax.send(JSON.stringify({ userId: userId, newText: newText }));
+      const newTextArr = Array.isArray(newText) ? newText : [newText];
+      ajax.send(JSON.stringify({ userId: userId, newText: newTextArr }));
     },
     lockCharacter: function (scenarioId, characterName, userId, callback) {
       let ajax = new XMLHttpRequest();

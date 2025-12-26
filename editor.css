@@ -5,23 +5,43 @@
   width: 100%;
   display: flex;
   align-items: center;
-  height: 120px;
+  min-height: 120px;
+  height: auto;
   margin: 0;
   padding: 0 20px;
   padding-right: 0;
   border: 1px solid #dfdfdf;
   z-index: 100;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 .zaglavlje h1 {
   font-size: 24px;
   font-family: "Inter", sans-serif;
   margin: 0;
   padding: 0;
-  flex-shrink: 1;
-  margin-right: 10px;
+  flex: 1 1 260px;
+  margin-right: 0;
   overflow: hidden;
+}
+
+.zaglavlje-controls {
+  display: flex;
+  flex: 2 1 640px;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.control-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 html {
@@ -72,21 +92,26 @@ h3 {
   background-color: #f0f0f0;
 }
 
-.dugme {
-  margin-left: auto;
-  margin-right: 10px;
+.dugme,
+.dugme1,
+.dugme2 {
+  margin-left: 0;
+  margin-right: 0;
   background-color: #28a745;
   border-radius: 10px;
   color: white;
   height: 40px;
-  width: 80px;
+  padding: 0 14px;
+  width: auto;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-family: "Inter", sans-serif;
 }
 
-.dugme:hover {
+.dugme:hover,
+.dugme1:hover,
+.dugme2:hover {
   background-color: #218838;
 }
 
@@ -166,7 +191,7 @@ ul {
   padding-left: clamp(40px, 6vw, 150px);
 }
 
-.naslov {
+.sadrzaj .naslov {
   color: #d68a00;
   text-transform: uppercase;
   font-weight: bold;
@@ -176,10 +201,37 @@ ul {
   font-size: 24px;
 }
 
-.sadrzaj p {
-  text-indent: clamp(50px, 20vw, 320px);
-  margin-top: 0;
-  margin-bottom: 1.5em;
+input.naslov,
+input.broj,
+.zaglavlje input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #dfdfdf;
+  border-radius: 10px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  min-width: 160px;
+}
+
+input.tekstLinije {
+  min-width: 260px;
+}
+
+.sadrzaj .lines {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1em;
+}
+
+.sadrzaj .scenario-line {
+  margin: 0;
+  padding: 6px 10px 6px 18px;
+  border-radius: 10px;
+}
+
+.sadrzaj .scenario-line.is-highlight {
+  outline: 2px solid #d68a00;
+  background-color: #fff3d6;
 }
 
 @media screen and (max-width: 750px) {
@@ -216,6 +268,11 @@ ul {
 
   .dugme {
     margin: 10px 0;
+  }
+
+  .zaglavlje-controls {
+    justify-content: center;
+    padding-right: 0;
   }
 
   .sidebar {

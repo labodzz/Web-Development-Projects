@@ -9,39 +9,60 @@
     <div class="zaglavlje">
       <h1>THE LAST STARSHIP (Draft 2)</h1>
 
-      <input
-        type="text"
-        class="naslov"
-        placeholder="Unesite naslov novog scenarija"
-      />
-      <button class="dugme" onclick="kreirajScenarij()">
-        + Kreiraj novi scenarij
-      </button>
-      <input type="number" class="broj" placeholder="ID scenarija" />
-      <button class="dugme1" onclick="otvoriScenarij()">Otvori scenarij</button>
-        <div class="lockLine">
-            <input type="number" class="idScenarija" placeholder="ID scenarija" />
-            <input type="number" class="idUser" placeholder="ID korisnika" />
-            <input
+      <div class="zaglavlje-controls">
+        <div class="control-group">
+          <input
+            type="text"
+            class="naslov"
+            placeholder="Unesite naslov novog scenarija"
+          />
+          <button class="dugme" onclick="kreirajScenarij()">
+            + Kreiraj novi scenarij
+          </button>
+        </div>
+
+        <div class="control-group">
+          <input type="number" class="broj" placeholder="ID scenarija" />
+          <button class="dugme1" onclick="otvoriScenarij()">
+            Otvori scenarij
+          </button>
+        </div>
+
+        <div class="control-group lockLine">
+          <input type="number" class="idScenarija" placeholder="ID scenarija" />
+          <input type="number" class="idUser" placeholder="ID korisnika" />
+          <input
             type="number"
             class="redniBroj"
             placeholder="Redni broj linije"
-            />
-            <button class="dugme2" onclick="lockLine()">Zaključaj liniju</button>
-      <div class="updateLine">
-        <input
-          type="text"
-          class="tekstLinije"
-          placeholder="Unesite novi tekst linije"
-        />
-        <input type="number" class="idScenarija" placeholder="ID scenarija" />
-        <input type="number" class="idUser" placeholder="ID korisnika" />
-        <input
-          type="number"
-          class="redniBroj"
-          placeholder="Redni broj linije"
-        />
-        <button class="dugme2" onclick="updateLine()">Ažuriraj liniju</button>
+          />
+          <button class="dugme2" onclick="lockLine()">Zaključaj liniju</button>
+        </div>
+
+        <div class="control-group lockCharacter">
+          <input type="number" class="idScenarija" placeholder="ID scenarija" />
+          <input type="number" class="idUser" placeholder="ID korisnika" />
+          <input type="text" class="imeKaraktera" placeholder="Ime karaktera" />
+          <button class="dugme2" onclick="lockCharacter()">
+            Zaključaj lika
+          </button>
+        </div>
+
+        <div class="control-group updateLine">
+          <input
+            type="text"
+            class="tekstLinije"
+            placeholder="Unesite novi tekst linije"
+          />
+          <input type="number" class="idScenarija" placeholder="ID scenarija" />
+          <input type="number" class="idUser" placeholder="ID korisnika" />
+          <input
+            type="number"
+            class="redniBroj"
+            placeholder="Redni broj linije"
+          />
+          <button class="dugme2" onclick="updateLine()">Ažuriraj liniju</button>
+        </div>
       </div>
     </div>
 
@@ -52,7 +73,7 @@
     <div class="sadrzaj">
       <h3 class="naslov"></h3>
       <br />
-      <p></p>
+      <div class="lines" aria-label="Scenario lines"></div>
     </div>
 
     <script src="PoziviAjax.js"></script>
@@ -71,31 +92,125 @@
       function otvoriScenarij() {
         const idInput = document.querySelector("input.broj");
         const id = idInput ? idInput.value : "";
-        let text = "";
+
+        if (!id) {
+          const naslovElement = document.querySelector(".sadrzaj .naslov");
+          const linesElement = document.querySelector(".sadrzaj .lines");
+          if (naslovElement) naslovElement.textContent = "";
+          if (linesElement) linesElement.innerHTML = "";
+          clearHighlightedLine();
+          return;
+        }
 
         PoziviAjax.getScenario(id, function (status, response) {
           if (status === 200 && response) {
             const naslovElement = document.querySelector(".sadrzaj .naslov");
-            const paragrafElement = document.querySelector(".sadrzaj p");
+            const linesElement = document.querySelector(".sadrzaj .lines");
 
             if (naslovElement) {
               naslovElement.textContent = response.title || "Nema naslova";
             }
-            if (paragrafElement) {
-              for (let i = 0; i < response.content.length; i++) {
-                text += response.content[i].text + "\n\n";
+            if (linesElement) {
+              linesElement.innerHTML = "";
+              const contentArr = Array.isArray(response.content)
+                ? response.content
+                : [];
+              for (let i = 0; i < contentArr.length; i++) {
+                const line = contentArr[i];
+                const row = document.createElement("div");
+                row.className = "scenario-line";
+                row.dataset.lineId = String(line.lineId);
+                row.textContent = line.text ?? "";
+                linesElement.appendChild(row);
               }
-              paragrafElement.textContent = text;
             }
+
+            highlightLineFromInputs();
           } else {
             alert("Došlo je do pogreške prilikom otvaranja scenarija.");
           }
         });
       }
+
+      function clearHighlightedLine() {
+        document
+          .querySelectorAll(".scenario-line.is-highlight")
+          .forEach((el) => el.classList.remove("is-highlight"));
+      }
+
+      function highlightLine(lineId) {
+        clearHighlightedLine();
+        if (!lineId && lineId !== 0) return;
+        const el = document.querySelector(
+          `.scenario-line[data-line-id="${String(lineId)}"]`
+        );
+        if (!el) return;
+        el.classList.add("is-highlight");
+        el.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+
+      function highlightLineFromInputs() {
+        const lockInput = document.querySelector(
+          "div.lockLine input.redniBroj"
+        );
+        const updateInput = document.querySelector(
+          "div.updateLine input.redniBroj"
+        );
+
+        const val =
+          (updateInput && updateInput.value) || (lockInput && lockInput.value);
+        if (!val) {
+          clearHighlightedLine();
+          return;
+        }
+        highlightLine(val);
+      }
+
+      document
+        .querySelectorAll(
+          "div.lockLine input.redniBroj, div.updateLine input.redniBroj"
+        )
+        .forEach((inp) => {
+          inp.addEventListener("input", highlightLineFromInputs);
+          inp.addEventListener("change", highlightLineFromInputs);
+        });
+
+      (function () {
+        const mainScenarioIdInput = document.querySelector("input.broj");
+        if (!mainScenarioIdInput) return;
+
+        let openTimer = null;
+        const scheduleOpen = () => {
+          if (openTimer) window.clearTimeout(openTimer);
+          openTimer = window.setTimeout(() => {
+            otvoriScenarij();
+          }, 350);
+        };
+
+        const wire = (inp) => {
+          if (!inp) return;
+          const onChange = () => {
+            if (inp !== mainScenarioIdInput) {
+              mainScenarioIdInput.value = inp.value;
+            }
+            scheduleOpen();
+          };
+          inp.addEventListener("input", onChange);
+          inp.addEventListener("change", onChange);
+        };
+
+        wire(document.querySelector("div.lockLine input.idScenarija"));
+        wire(document.querySelector("div.updateLine input.idScenarija"));
+      })();
       function lockLine() {
-        let lineId = document.querySelector("div.lockLine input.redniBroj").value;
-        let scenarioId = document.querySelector("div.lockLine input.idScenarija").value;
+        let lineId = document.querySelector(
+          "div.lockLine input.redniBroj"
+        ).value;
+        let scenarioId = document.querySelector(
+          "div.lockLine input.idScenarija"
+        ).value;
         let userId = document.querySelector("div.lockLine input.idUser").value;
+
         PoziviAjax.lockLine(
           scenarioId,
           lineId,
@@ -111,22 +226,64 @@
       }
 
       function updateLine() {
-        let lineId = document.querySelector("div.updateLine input.redniBroj").value;
-        let scenarioId = document.querySelector("div.updateLine input.idScenarija").value;
-        let userId = document.querySelector("div.updateLine input.idUser").value;
-        let newText = document.querySelector("div.updateLine input.tekstLinije").value;
+        let lineId = document.querySelector(
+          "div.updateLine input.redniBroj"
+        ).value;
+        let scenarioId = document.querySelector(
+          "div.updateLine input.idScenarija"
+        ).value;
+        let userId = document.querySelector(
+          "div.updateLine input.idUser"
+        ).value;
+        let newText = document.querySelector(
+          "div.updateLine input.tekstLinije"
+        ).value;
+
+        const newTextArr = String(newText ?? "")
+          .split(/\r?\n/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+
         PoziviAjax.updateLine(
           scenarioId,
           lineId,
           userId,
-          newText,
+          newTextArr,
           function (status, response) {
             if (status === 200 && response) {
               alert("Linija je uspješno ažurirana.");
               document.querySelector("input.broj").value = scenarioId;
               otvoriScenarij();
             } else {
-              alert("Linija nije ažurirana. Došlo je do pogreške.");
+              const msg =
+                response && response.message
+                  ? response.message
+                  : "Linija nije ažurirana. Došlo je do pogreške.";
+              alert(msg);
+            }
+          }
+        );
+      }
+      function lockCharacter() {
+        let characterName = document.querySelector(
+          "div.lockCharacter input.imeKaraktera"
+        ).value;
+        let scenarioId = document.querySelector(
+          "div.lockCharacter input.idScenarija"
+        ).value;
+        let userId = document.querySelector(
+          "div.lockCharacter input.idUser"
+        ).value;
+
+        PoziviAjax.lockCharacter(
+          scenarioId,
+          characterName,
+          userId,
+          function (status, response) {
+            if (status === 200 && response) {
+              alert("Linija je uspješno zaključana.");
+            } else {
+              alert("Došlo je do pogreške prilikom zaključavanja linije.");
             }
           }
         );
