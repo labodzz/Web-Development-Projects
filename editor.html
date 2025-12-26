@@ -49,11 +49,10 @@
         </div>
 
         <div class="control-group updateLine">
-          <input
-            type="text"
+          <textarea
             class="tekstLinije"
-            placeholder="Unesite novi tekst linije"
-          />
+            placeholder="Unesite novi tekst linije (može više redova)"
+          ></textarea>
           <input type="number" class="idScenarija" placeholder="ID scenarija" />
           <input type="number" class="idUser" placeholder="ID korisnika" />
           <input
@@ -123,6 +122,12 @@
                 response.id +
                 ")"
             );
+
+            const mainId = document.querySelector("input.broj");
+            if (mainId && response.id != null) {
+              mainId.value = response.id;
+              otvoriScenarij();
+            }
           } else {
             alert("Došlo je do pogreške prilikom kreiranja scenarija.");
           }
@@ -221,6 +226,37 @@
                 row.className = "scenario-line";
                 row.dataset.lineId = String(line.lineId);
                 row.textContent = line.text ?? "";
+
+                row.addEventListener("click", () => {
+                  const scenarioIdVal = String(id);
+                  const lineIdVal = String(line.lineId);
+
+                  const setVal = (selector, val) => {
+                    const el = document.querySelector(selector);
+                    if (el) el.value = val;
+                  };
+
+                  setVal("div.lockLine input.idScenarija", scenarioIdVal);
+                  setVal("div.updateLine input.idScenarija", scenarioIdVal);
+                  setVal("div.lockCharacter input.idScenarija", scenarioIdVal);
+                  setVal(
+                    "div.updateCharacter input.idScenarija",
+                    scenarioIdVal
+                  );
+                  setVal("div.getDeltas input.idScenarija", scenarioIdVal);
+
+                  setVal("div.lockLine input.redniBroj", lineIdVal);
+                  setVal("div.updateLine input.redniBroj", lineIdVal);
+
+                  const txt = typeof line.text === "string" ? line.text : "";
+                  const txtEl = document.querySelector(
+                    "div.updateLine textarea.tekstLinije"
+                  );
+                  if (txtEl) txtEl.value = txt;
+
+                  highlightLine(lineIdVal);
+                });
+
                 linesElement.appendChild(row);
               }
             }
@@ -399,7 +435,7 @@
           "div.updateLine input.idUser"
         ).value;
         let newText = document.querySelector(
-          "div.updateLine input.tekstLinije"
+          "div.updateLine textarea.tekstLinije"
         ).value;
 
         const newTextArr = String(newText ?? "")
