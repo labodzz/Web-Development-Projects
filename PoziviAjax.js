@@ -62,13 +62,7 @@ const PoziviAjax = (function () {
     },
     lockCharacter: function (scenarioId, characterName, userId, callback) {
       let ajax = new XMLHttpRequest();
-      ajax.open(
-        "POST",
-        `/api/scenarios/${scenarioId}/characters/${encodeURIComponent(
-          characterName
-        )}/lock`,
-        true
-      );
+      ajax.open("POST", `/api/scenarios/${scenarioId}/characters/lock`, true);
       ajax.setRequestHeader("Content-Type", "application/json");
       ajax.onreadystatechange = function () {
         if (ajax.readyState === 4) {
@@ -81,17 +75,13 @@ const PoziviAjax = (function () {
           callback(ajax.status, response);
         }
       };
-      ajax.send(JSON.stringify({ userId: userId }));
+      ajax.send(
+        JSON.stringify({ userId: userId, characterName: characterName })
+      );
     },
     updateCharacter: function (scenarioId, userId, oldName, newName, callback) {
       let ajax = new XMLHttpRequest();
-      ajax.open(
-        "PUT",
-        `/api/scenarios/${scenarioId}/characters/${encodeURIComponent(
-          oldName
-        )}`,
-        true
-      );
+      ajax.open("POST", `/api/scenarios/${scenarioId}/characters/update`, true);
       ajax.setRequestHeader("Content-Type", "application/json");
       ajax.onreadystatechange = function () {
         if (ajax.readyState === 4) {
@@ -104,7 +94,13 @@ const PoziviAjax = (function () {
           callback(ajax.status, response);
         }
       };
-      ajax.send(JSON.stringify({ userId: userId, newName: newName }));
+      ajax.send(
+        JSON.stringify({
+          userId: userId,
+          oldName: oldName,
+          newName: newName,
+        })
+      );
     },
     getDeltas: function (scenarioId, since, callback) {
       let ajax = new XMLHttpRequest();

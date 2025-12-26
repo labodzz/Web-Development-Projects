@@ -201,6 +201,7 @@
 
         wire(document.querySelector("div.lockLine input.idScenarija"));
         wire(document.querySelector("div.updateLine input.idScenarija"));
+        wire(document.querySelector("div.lockCharacter input.idScenarija"));
       })();
       function lockLine() {
         let lineId = document.querySelector(
@@ -281,9 +282,13 @@
           userId,
           function (status, response) {
             if (status === 200 && response) {
-              alert("Linija je uspješno zaključana.");
+              alert(response.message || "Ime lika je uspješno zaključano!");
             } else {
-              alert("Došlo je do pogreške prilikom zaključavanja linije.");
+              const msg =
+                response && response.message
+                  ? response.message
+                  : "Došlo je do pogreške prilikom zaključavanja lika.";
+              alert(msg);
             }
           }
         );
