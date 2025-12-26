@@ -91,5 +91,45 @@
     "nextLineId": null,
     "content": "Nova linija",
     "timestamp": 1766784562
+  },
+  {
+    "scenarioId": 7,
+    "type": "line_update",
+    "lineId": 1,
+    "nextLineId": 2,
+    "content": "Implementirajte JavaScript modul PoziviAjax. Ako koristite fetch umjesto XMLHTTPRequest objekta, onda modul nazovite PoziviAjaxFetch (radi jednostavnosti, u nastavku teksta će",
+    "timestamp": 1766786480
+  },
+  {
+    "scenarioId": 7,
+    "type": "line_update",
+    "lineId": 2,
+    "nextLineId": 3,
+    "content": "se koristiti naziv PoziviAjax bez obzira da li se misli na PoziviAjax ili PoziviAjaxFetch). Modul se treba nalaziti u istoimenoj",
+    "timestamp": 1766786480
+  },
+  {
+    "scenarioId": 7,
+    "type": "line_update",
+    "lineId": 3,
+    "nextLineId": 4,
+    "content": "datoteci sa “js” ekstenzijom.",
+    "timestamp": 1766786480
+  },
+  {
+    "scenarioId": 7,
+    "type": "line_update",
+    "lineId": 4,
+    "nextLineId": 5,
+    "content": "Na osnovu definisanih ruta i ranijih zahtjeva, modul PoziviAjax treba biti implementiran kao anonimna funkcija koja se odmah izvršava i",
+    "timestamp": 1766786480
+  },
+  {
+    "scenarioId": 7,
+    "type": "line_update",
+    "lineId": 5,
+    "nextLineId": null,
+    "content": "vraća objekat sa metodama za komunikaciju sa backend-om.",
+    "timestamp": 1766786480
   }
 ]

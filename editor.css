@@ -19,9 +19,23 @@
   font-family: "Inter", sans-serif;
   margin: 0;
   padding: 0;
-  flex: 1 1 260px;
   margin-right: 0;
   overflow: hidden;
+}
+
+.zaglavlje-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 360px;
+  min-width: 260px;
+}
+
+.napomena {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: rgb(105, 105, 105);
+  line-height: 1.35;
 }
 
 .zaglavlje-controls {
@@ -234,13 +248,14 @@ input.tekstLinije {
 .sadrzaj .lines {
   display: flex;
   flex-direction: column;
-  gap: 1.1em;
+  gap: 0.25em;
 }
 
 .sadrzaj .scenario-line {
   margin: 0;
   padding: 6px 10px 6px 18px;
   border-radius: 10px;
+  cursor: pointer;
 }
 
 .sadrzaj .scenario-line.is-highlight {
