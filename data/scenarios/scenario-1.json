@@ -5,12 +5,12 @@
     {
       "lineId": 1,
       "nextLineId": 2,
-      "text": "Korisnik ALICIA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
+      "text": "Korisnik LAMIJA novi tekst za odgovarajuću liniju. Server ažurira podatke, otključava liniju i bilježi promjenu korištenjem tzv. timestamp. Pored ažuriranja"
     },
     {
       "lineId": 2,
       "nextLineId": 4,
-      "text": "JA SAM TU"
+      "text": "Ovo je nova linija"
     },
     {
       "lineId": 4,

@@ -89,21 +89,6 @@
       <div class="sidebar">
         <h4 class="deltasTitle">Deltas file</h4>
         <div class="deltasOutput" aria-label="Scenario deltas"></div>
-        <div class="sidebarBottom">
-          <div class="control-group getDeltas">
-            <input
-              type="number"
-              class="idScenarija"
-              placeholder="ID scenarija"
-            />
-            <input
-              type="number"
-              class="since"
-              placeholder="Since (timestamp)"
-            />
-            <button class="dugme2" onclick="getDeltas()">Dohvati delte</button>
-          </div>
-        </div>
       </div>
 
       <div class="sadrzaj">
@@ -115,6 +100,64 @@
 
     <script src="PoziviAjax.js"></script>
     <script>
+      let deltasPollingInterval = null;
+      let lastDeltaTimestamp = 0;
+      let currentOpenScenarioId = null;
+      const POLLING_INTERVAL_MS = 10000;
+      const pageLoadTimestamp = Math.floor(Date.now() / 1000);
+
+      function startDeltasPolling(scenarioId) {
+        stopDeltasPolling();
+        currentOpenScenarioId = scenarioId;
+
+        lastDeltaTimestamp = pageLoadTimestamp;
+
+        const pollOnce = () => {
+          if (!currentOpenScenarioId) return;
+          PoziviAjax.getDeltas(
+            currentOpenScenarioId,
+            lastDeltaTimestamp,
+            function (status, response) {
+              const out = document.querySelector(".deltasOutput");
+              if (!out) return;
+
+              if (status === 200 && response) {
+                const deltas = Array.isArray(response.deltas)
+                  ? response.deltas
+                  : [];
+                if (deltas.length > 0) {
+                  const maxTs = deltas.reduce(
+                    (max, d) => Math.max(max, d.timestamp || 0),
+                    lastDeltaTimestamp
+                  );
+                  lastDeltaTimestamp = maxTs;
+                  renderDeltas(out, response);
+
+                  otvoriScenarij();
+                }
+                return;
+              }
+
+              const msg =
+                response && response.message
+                  ? response.message
+                  : "Polling delti nije uspio (server/API nedostupan?).";
+              out.textContent = msg;
+            }
+          );
+        };
+
+        pollOnce();
+        deltasPollingInterval = setInterval(pollOnce, POLLING_INTERVAL_MS);
+      }
+
+      function stopDeltasPolling() {
+        if (deltasPollingInterval) {
+          clearInterval(deltasPollingInterval);
+          deltasPollingInterval = null;
+        }
+      }
+
       function kreirajScenarij() {
         const titleInput = document.querySelector("input.naslov");
         const title = titleInput ? titleInput.value : "";
@@ -214,6 +257,7 @@
           if (naslovElement) naslovElement.textContent = "";
           if (linesElement) linesElement.innerHTML = "";
           clearHighlightedLine();
+          stopDeltasPolling();
           return;
         }
 
@@ -253,7 +297,6 @@
                     "div.updateCharacter input.idScenarija",
                     scenarioIdVal
                   );
-                  setVal("div.getDeltas input.idScenarija", scenarioIdVal);
 
                   setVal("div.lockLine input.redniBroj", lineIdVal);
                   setVal("div.updateLine input.redniBroj", lineIdVal);
@@ -272,6 +315,10 @@
             }
 
             highlightLineFromInputs();
+
+            if (String(id) !== String(currentOpenScenarioId)) {
+              startDeltasPolling(id);
+            }
           } else {
             alert("Došlo je do pogreške prilikom otvaranja scenarija.");
           }
@@ -349,7 +396,6 @@
         wire(document.querySelector("div.updateLine input.idScenarija"));
         wire(document.querySelector("div.lockCharacter input.idScenarija"));
         wire(document.querySelector("div.updateCharacter input.idScenarija"));
-        wire(document.querySelector("div.getDeltas input.idScenarija"));
       })();
 
       function updateCharacter() {
@@ -387,30 +433,6 @@
         );
       }
 
-      function getDeltas() {
-        const scenarioId = document.querySelector(
-          "div.getDeltas input.idScenarija"
-        ).value;
-        const sinceVal = document.querySelector(
-          "div.getDeltas input.since"
-        ).value;
-        const since = sinceVal ? sinceVal : 0;
-
-        PoziviAjax.getDeltas(scenarioId, since, function (status, response) {
-          const out = document.querySelector(".deltasOutput");
-          if (!out) return;
-
-          if (status === 200 && response) {
-            renderDeltas(out, response);
-          } else {
-            const msg =
-              response && response.message
-                ? response.message
-                : "Došlo je do pogreške prilikom dohvata delti.";
-            out.textContent = msg;
-          }
-        });
-      }
       function lockLine() {
         let lineId = document.querySelector(
           "div.lockLine input.redniBroj"

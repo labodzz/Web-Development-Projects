@@ -4,8 +4,18 @@
   "content": [
     {
       "lineId": 1,
+      "nextLineId": 2,
+      "text": "OVO JE NOVA LINIJA"
+    },
+    {
+      "lineId": 2,
+      "nextLineId": 3,
+      "text": "BLABA"
+    },
+    {
+      "lineId": 3,
       "nextLineId": null,
-      "text": ""
+      "text": "BSJDKJHF fkjdfhahturgnasdovetute"
     }
   ]
 }

@@ -131,5 +131,76 @@
     "nextLineId": null,
     "content": "vraća objekat sa metodama za komunikaciju sa backend-om.",
     "timestamp": 1766786480
+  },
+  {
+    "scenarioId": 1,
+    "type": "line_update",
+    "lineId": 2,
+    "nextLineId": 4,
+    "content": "Ovo je nova linija",
+    "timestamp": 1766937167
+  },
+  {
+    "scenarioId": 1,
+    "type": "char_rename",
+    "oldName": "ALICIA",
+    "newName": "LAMIJA",
+    "timestamp": 1766937481
+  },
+  {
+    "scenarioId": 3,
+    "type": "line_update",
+    "lineId": 1,
+    "nextLineId": null,
+    "content": "OVO JE NOVA LINIJA",
+    "timestamp": 1766937557
+  },
+  {
+    "scenarioId": 3,
+    "type": "line_update",
+    "lineId": 1,
+    "nextLineId": 2,
+    "content": "OVO JE NOVA LINIJA",
+    "timestamp": 1766937609
+  },
+  {
+    "scenarioId": 3,
+    "type": "line_update",
+    "lineId": 2,
+    "nextLineId": 3,
+    "content": "BLABA",
+    "timestamp": 1766937609
+  },
+  {
+    "scenarioId": 3,
+    "type": "line_update",
+    "lineId": 3,
+    "nextLineId": null,
+    "content": "BSJDKJHF",
+    "timestamp": 1766937609
+  },
+  {
+    "scenarioId": 3,
+    "type": "line_update",
+    "lineId": 3,
+    "nextLineId": null,
+    "content": "BSJDKJHF fkjdfhahturgnasdovetute",
+    "timestamp": 1766937647
+  },
+  {
+    "scenarioId": 7,
+    "type": "line_update",
+    "lineId": 1,
+    "nextLineId": 6,
+    "content": "Ovo je sada novi tekst",
+    "timestamp": 1766937842
+  },
+  {
+    "scenarioId": 7,
+    "type": "line_update",
+    "lineId": 6,
+    "nextLineId": 2,
+    "content": "Nova linija",
+    "timestamp": 1766937842
   }
 ]

@@ -4,8 +4,13 @@
   "content": [
     {
       "lineId": 1,
+      "nextLineId": 6,
+      "text": "Ovo je sada novi tekst"
+    },
+    {
+      "lineId": 6,
       "nextLineId": 2,
-      "text": "Implementirajte JavaScript modul PoziviAjax. Ako koristite fetch umjesto XMLHTTPRequest objekta, onda modul nazovite PoziviAjaxFetch (radi jednostavnosti, u nastavku teksta će"
+      "text": "Nova linija"
     },
     {
       "lineId": 2,
