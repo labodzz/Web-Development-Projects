@@ -168,14 +168,6 @@
             response &&
             response.title
           ) {
-            alert(
-              "Uspješno kreiran scenarij: " +
-                response.title +
-                " (ID: " +
-                response.id +
-                ")"
-            );
-
             const mainId = document.querySelector("input.broj");
             if (mainId && response.id != null) {
               mainId.value = response.id;
@@ -419,7 +411,6 @@
           newName,
           function (status, response) {
             if (status === 200 && response) {
-              alert(response.message || "Ime lika je uspješno ažurirano!");
               document.querySelector("input.broj").value = scenarioId;
               otvoriScenarij();
             } else {
@@ -448,7 +439,6 @@
           userId,
           function (status, response) {
             if (status === 200 && response) {
-              alert("Linija je uspješno zaključana.");
             } else {
               alert("Došlo je do pogreške prilikom zaključavanja linije.");
             }
@@ -482,7 +472,6 @@
           newTextArr,
           function (status, response) {
             if (status === 200 && response) {
-              alert("Linija je uspješno ažurirana.");
               document.querySelector("input.broj").value = scenarioId;
               otvoriScenarij();
             } else {
@@ -512,7 +501,6 @@
           userId,
           function (status, response) {
             if (status === 200 && response) {
-              alert(response.message || "Ime lika je uspješno zaključano!");
             } else {
               const msg =
                 response && response.message
