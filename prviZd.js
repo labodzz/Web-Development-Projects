@@ -7,6 +7,9 @@ app.use(express.static(__dirname));
 const fs = require("fs");
 const path = require("path");
 
+const seq = require("./database");
+const { Scenario, Line, Delta, Checkpoint } = require("./models");
+
 const scenariosDir = path.join(__dirname, "data", "scenarios");
 
 const lineLocksByKey = new Map();
@@ -131,7 +134,7 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
   }
 
   const currentIndex = scenarioData.content.findIndex(
-    (l) => l.lineId === lineId
+    (l) => l.lineId === lineId,
   );
   if (currentIndex === -1) {
     return res.status(404).json({ message: "Linija ne postoji!" });
@@ -162,7 +165,7 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
   const originalNext = currentLine.nextLineId ?? null;
   const maxLineId = scenarioData.content.reduce(
     (max, l) => (l.lineId > max ? l.lineId : max),
-    0
+    0,
   );
   let nextId = maxLineId + 1;
 
@@ -314,7 +317,7 @@ app.post("/api/scenarios/:scenarioId/characters/update", (req, res) => {
     __dirname,
     "data",
     "scenarios",
-    `scenario-${scenarioId}.json`
+    `scenario-${scenarioId}.json`,
   );
   if (!fs.existsSync(scenarioPath)) {
     return res.status(404).json({ message: "Scenario ne postoji!" });
@@ -395,7 +398,7 @@ app.get("/api/scenarios/:scenarioId", (req, res) => {
     __dirname,
     "data",
     "scenarios",
-    `scenario-${scenarioId}.json`
+    `scenario-${scenarioId}.json`,
   );
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ message: "Scenario ne postoji!" });
@@ -419,8 +422,11 @@ app.get("/api/scenarios/:scenarioId", (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server radi na portu 3000");
+seq.sync({ force: true }).then(() => {
+  console.log("Tabele su kreirane!");
+  app.listen(3000, () => {
+    console.log("Server radi na portu 3000");
+  });
 });
 
 app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
@@ -468,7 +474,7 @@ app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
         let nextLineId = entry.nextLineId ?? null;
         if (scenarioObj && Array.isArray(scenarioObj.content)) {
           const lineObj = scenarioObj.content.find(
-            (l) => l.lineId === entry.lineId
+            (l) => l.lineId === entry.lineId,
           );
           if (lineObj) nextLineId = lineObj.nextLineId ?? null;
         }
@@ -490,7 +496,7 @@ app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
         let nextLineId = null;
         if (scenarioObj && Array.isArray(scenarioObj.content)) {
           const lineObj = scenarioObj.content.find(
-            (l) => l.lineId === ln.lineId
+            (l) => l.lineId === ln.lineId,
           );
           if (lineObj) nextLineId = lineObj.nextLineId ?? null;
         }
