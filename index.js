@@ -1,7 +1,7 @@
-const Scenario = require("./scenario");
-const Line = require("./line");
-const Delta = require("./delta");
-const Checkpoint = require("./checkpoint");
+const Scenario = require("./models/scenario");
+const Line = require("./models/line");
+const Delta = require("./models/delta");
+const Checkpoint = require("./models/checkpoint");
 
 Scenario.hasMany(Line, {
   foreignKey: "scenarioId",

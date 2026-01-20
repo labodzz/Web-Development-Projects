@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 
 const seq = require("./database");
-const { Scenario, Line, Delta, Checkpoint } = require("./models");
+const { Scenario, Line, Delta, Checkpoint } = require(".");
 
 const scenariosDir = path.join(__dirname, "data", "scenarios");
 
