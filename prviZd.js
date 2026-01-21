@@ -525,3 +525,56 @@ app.get("/api/scenarios/:scenarioId/deltas", (req, res) => {
   result.sort((a, b) => a.timestamp - b.timestamp);
   return res.status(200).json({ deltas: result });
 });
+
+app.post("/api/scenarios/:scenarioId/checkpoint", async (req, res) => {
+  const scenarioId = Number(req.params.scenarioId);
+  const userId = req.body.userId;
+
+  if (!Number.isInteger(scenarioId)) {
+    return res.status(400).json({ message: "Neispravan scenarioId." });
+  }
+
+  const scenarioPath = path.join(scenariosDir, `scenario-${scenarioId}.json`);
+  if (!fs.existsSync(scenarioPath)) {
+    return res.status(404).json({ message: "Scenario ne postoji!" });
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+
+  try {
+    await Checkpoint.create({
+      scenarioId,
+      timestamp,
+    });
+    return res.status(200).json({ message: "Checkpoint je uspjesno kreiran!" });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Greška pri kreiranju checkpointa." });
+  }
+});
+
+app.get("/api/scenarios/:scenarioId/checkpoints", async (req, res) => {
+  const scenarioId = Number(req.params.scenarioId);
+
+  if (!Number.isInteger(scenarioId)) {
+    return res.status(400).json({ message: "Neispravan scenarioId." });
+  }
+
+  const scenarioPath = path.join(scenariosDir, `scenario-${scenarioId}.json`);
+  if (!fs.existsSync(scenarioPath)) {
+    return res.status(404).json({ message: "Scenario ne postoji!" });
+  }
+
+  try {
+    const checkpoints = await Checkpoint.findAll({
+      where: { scenarioId },
+      attributes: ["id", "timestamp"],
+    });
+    return res.status(200).json(checkpoints);
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Greška pri dohvaćanju checkpointa." });
+  }
+});
