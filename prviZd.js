@@ -578,3 +578,134 @@ app.get("/api/scenarios/:scenarioId/checkpoints", async (req, res) => {
       .json({ message: "Greška pri dohvaćanju checkpointa." });
   }
 });
+
+app.get(
+  "/api/scenarios/:scenarioId/restore/:checkpointId",
+  async (req, res) => {
+    const scenarioId = Number(req.params.scenarioId);
+    const checkpointId = Number(req.params.checkpointId);
+
+    if (!Number.isInteger(scenarioId)) {
+      return res.status(400).json({ message: "Neispravan scenarioId." });
+    }
+    if (!Number.isInteger(checkpointId)) {
+      return res.status(400).json({ message: "Neispravan checkpointId." });
+    }
+
+    const scenarioPath = path.join(scenariosDir, `scenario-${scenarioId}.json`);
+    if (!fs.existsSync(scenarioPath)) {
+      return res.status(404).json({ message: "Scenario ne postoji!" });
+    }
+
+    let checkpoint;
+    try {
+      checkpoint = await Checkpoint.findOne({
+        where: { id: checkpointId, scenarioId },
+      });
+    } catch (err) {
+      return res
+        .status(500)
+        .json({ message: "Greška pri dohvaćanju checkpointa." });
+    }
+
+    if (!checkpoint) {
+      return res.status(404).json({ message: "Checkpoint ne postoji!" });
+    }
+
+    const checkpointTimestamp = checkpoint.timestamp;
+
+    let scenarioObj;
+    try {
+      scenarioObj = JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
+    } catch (e) {
+      return res.status(500).json({ message: "Greška pri čitanju datoteke." });
+    }
+
+    const restoredScenario = {
+      id: scenarioId,
+      title: scenarioObj.title || "Neimenovani scenarij",
+      content: [{ lineId: 1, nextLineId: null, text: "" }],
+    };
+
+    const deltasPath = path.join(__dirname, "data", "deltas.json");
+    let deltasRaw = [];
+    if (fs.existsSync(deltasPath)) {
+      try {
+        const raw = fs.readFileSync(deltasPath, "utf8");
+        deltasRaw = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(deltasRaw)) deltasRaw = [];
+      } catch (_) {
+        deltasRaw = [];
+      }
+    }
+
+    const relevantDeltas = deltasRaw
+      .filter(
+        (d) =>
+          d.scenarioId === scenarioId &&
+          typeof d.timestamp === "number" &&
+          d.timestamp <= checkpointTimestamp,
+      )
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    for (const delta of relevantDeltas) {
+      if (delta.type === "line_update" || delta.type === "update") {
+        const lineId = delta.lineId;
+        const content =
+          typeof delta.content === "string"
+            ? delta.content
+            : String(delta.content ?? "");
+        const nextLineId = delta.nextLineId ?? null;
+
+        const existingIndex = restoredScenario.content.findIndex(
+          (l) => l.lineId === lineId,
+        );
+        if (existingIndex !== -1) {
+          restoredScenario.content[existingIndex].text = content;
+          restoredScenario.content[existingIndex].nextLineId = nextLineId;
+        } else {
+          restoredScenario.content.push({
+            lineId,
+            nextLineId,
+            text: content,
+          });
+        }
+      } else if (
+        delta.type === "char_rename" ||
+        delta.type === "character_rename"
+      ) {
+        const oldName = delta.oldName;
+        const newName = delta.newName;
+        for (const line of restoredScenario.content) {
+          if (typeof line.text === "string" && line.text.includes(oldName)) {
+            line.text = line.text.split(oldName).join(newName);
+          }
+        }
+      }
+    }
+
+    const orderedContent = [];
+    const lineMap = new Map();
+    for (const line of restoredScenario.content) {
+      lineMap.set(line.lineId, line);
+    }
+
+    let currentLine = lineMap.get(1);
+    while (currentLine) {
+      orderedContent.push(currentLine);
+      if (currentLine.nextLineId === null) break;
+      currentLine = lineMap.get(currentLine.nextLineId);
+      if (!currentLine) break;
+    }
+
+    for (const line of restoredScenario.content) {
+      if (!orderedContent.find((l) => l.lineId === line.lineId)) {
+        orderedContent.push(line);
+      }
+    }
+
+    restoredScenario.content = orderedContent;
+
+    return res.status(200).json(restoredScenario);
+  },
+);
