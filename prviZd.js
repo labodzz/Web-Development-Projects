@@ -4,51 +4,42 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-const fs = require("fs");
-const path = require("path");
-
 const seq = require("./database");
 const { Scenario, Line, Delta, Checkpoint } = require(".");
-
-const scenariosDir = path.join(__dirname, "data", "scenarios");
 
 const lineLocksByKey = new Map();
 const lineLockByUser = new Map();
 const characterLocksByKey = new Map();
 
-if (!fs.existsSync(scenariosDir))
-  fs.mkdirSync(scenariosDir, { recursive: true });
-
-app.post("/api/scenarios", (req, res) => {
+app.post("/api/scenarios", async (req, res) => {
   let naslov =
     req.body.title && req.body.title.trim()
       ? req.body.title
       : "Neimenovani scenarij";
 
-  const files = fs.readdirSync(scenariosDir);
-  let maxId = 0;
-  files.forEach((file) => {
-    const match = file.match(/scenario-(\d+)\.json/);
-    if (match) {
-      const id = parseInt(match[1]);
-      if (id > maxId) maxId = id;
-    }
-  });
-  const newId = maxId + 1;
+  try {
+    const scenario = await Scenario.create({ title: naslov });
 
-  const newScenario = {
-    id: newId,
-    title: naslov,
-    content: [{ lineId: 1, nextLineId: null, text: "" }],
-  };
+    await Line.create({
+      lineId: 1,
+      text: "",
+      nextLineId: null,
+      scenarioId: scenario.id,
+    });
 
-  const filePath = path.join(scenariosDir, `scenario-${newId}.json`);
-  fs.writeFileSync(filePath, JSON.stringify(newScenario, null, 2));
+    const newScenario = {
+      id: scenario.id,
+      title: scenario.title,
+      content: [{ lineId: 1, nextLineId: null, text: "" }],
+    };
 
-  res.status(200).json(newScenario);
+    res.status(200).json(newScenario);
+  } catch (err) {
+    res.status(500).json({ message: "Greška pri kreiranju scenarija." });
+  }
 });
 
-app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", (req, res) => {
+app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const lineId = Number(req.params.lineId);
   const userId = req.body.userId;
@@ -65,39 +56,48 @@ app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", (req, res) => {
       .json({ message: "Nedostaje userId u tijelu zahtjeva." });
   }
 
-  const scenarioPath = path.join(scenariosDir, `scenario-${scenarioId}.json`);
-  if (!fs.existsSync(scenarioPath)) {
-    return res.status(404).json({ message: "Scenario ne postoji!" });
-  }
-
-  const scenarioData = JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
-  const line = scenarioData.content.find((l) => l.lineId === lineId);
-  if (!line) {
-    return res.status(404).json({ message: "Linija ne postoji!" });
-  }
-
-  const lockKey = `${scenarioId}:${lineId}`;
-  const existingUser = lineLocksByKey.get(lockKey);
-  if (existingUser && existingUser !== uid) {
-    return res.status(409).json({ message: "Linija je vec zakljucana!" });
-  }
-
-  if (existingUser && existingUser === uid) {
-    return res.status(200).json({ message: "Linija je uspjesno zakljucana!" });
-  }
-
-  const previous = lineLockByUser.get(uid);
-  if (previous) {
-    const prevKey = `${previous.scenarioId}:${previous.lineId}`;
-    const prevUser = lineLocksByKey.get(prevKey);
-    if (prevUser === uid) {
-      lineLocksByKey.delete(prevKey);
+  try {
+    const scenario = await Scenario.findByPk(scenarioId);
+    if (!scenario) {
+      return res.status(404).json({ message: "Scenario ne postoji!" });
     }
-  }
 
-  lineLocksByKey.set(lockKey, uid);
-  lineLockByUser.set(uid, { scenarioId, lineId });
-  return res.status(200).json({ message: "Linija je uspjesno zakljucana!" });
+    const line = await Line.findOne({
+      where: { scenarioId, lineId },
+    });
+    if (!line) {
+      return res.status(404).json({ message: "Linija ne postoji!" });
+    }
+
+    const lockKey = `${scenarioId}:${lineId}`;
+    const existingUser = lineLocksByKey.get(lockKey);
+    if (existingUser && existingUser !== uid) {
+      return res.status(409).json({ message: "Linija je vec zakljucana!" });
+    }
+
+    if (existingUser && existingUser === uid) {
+      return res
+        .status(200)
+        .json({ message: "Linija je uspjesno zakljucana!" });
+    }
+
+    const previous = lineLockByUser.get(uid);
+    if (previous) {
+      const prevKey = `${previous.scenarioId}:${previous.lineId}`;
+      const prevUser = lineLocksByKey.get(prevKey);
+      if (prevUser === uid) {
+        lineLocksByKey.delete(prevKey);
+      }
+    }
+
+    lineLocksByKey.set(lockKey, uid);
+    lineLockByUser.set(uid, { scenarioId, lineId });
+    return res.status(200).json({ message: "Linija je uspjesno zakljucana!" });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Greška pri zaključavanju linije." });
+  }
 });
 
 app.put("/api/scenarios/:scenarioId/lines/:lineId", (req, res) => {
