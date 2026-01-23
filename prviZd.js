@@ -417,8 +417,125 @@ app.get("/api/scenarios/:scenarioId", async (req, res) => {
   }
 });
 
-seq.sync({ force: true }).then(() => {
+async function initializeDatabase() {
+  const scenarioData = {
+    id: 1,
+    title: "Potraga za izgubljenim ključem",
+    content: [
+      {
+        lineId: 1,
+        nextLineId: 2,
+        text: "NARATOR: Sunce je polako zalazilo nad starim gradom.",
+      },
+      {
+        lineId: 2,
+        nextLineId: 3,
+        text: "ALICE: Jesi li siguran da je ključ ostao u biblioteci?",
+      },
+      {
+        lineId: 3,
+        nextLineId: 4,
+        text: "BOB: To je posljednje mjesto gdje sam ga vidio prije nego što je pala noć.",
+      },
+      {
+        lineId: 4,
+        nextLineId: 5,
+        text: "ALICE: Moramo požuriti prije nego što čuvar zaključa glavna vrata.",
+      },
+      {
+        lineId: 5,
+        nextLineId: 6,
+        text: "BOB: Čekaj, čuješ li taj zvuk iza polica?",
+      },
+      {
+        lineId: 6,
+        nextLineId: null,
+        text: "NARATOR: Iz sjene se polako pojavila nepoznata figura.",
+      },
+    ],
+  };
+
+  const deltasData = [
+    {
+      scenarioId: 1,
+      type: "line_update",
+      lineId: 1,
+      nextLineId: 2,
+      content: "NARATOR: Sunce je polako zalazilo nad starim gradom.",
+      timestamp: 1736520000,
+    },
+    {
+      scenarioId: 1,
+      type: "line_update",
+      lineId: 2,
+      nextLineId: 3,
+      content: "ALICE: Jesi li siguran da je ključ ostao u biblioteci?",
+      timestamp: 1736520010,
+    },
+    {
+      scenarioId: 1,
+      type: "line_update",
+      lineId: 3,
+      nextLineId: 4,
+      content:
+        "BOB: To je posljednje mjesto gdje sam ga vidio prije nego što je pala noć.",
+      timestamp: 1736520020,
+    },
+    {
+      scenarioId: 1,
+      type: "line_update",
+      lineId: 4,
+      nextLineId: 5,
+      content:
+        "ALICE: Moramo požuriti prije nego što čuvar zaključa glavna vrata.",
+      timestamp: 1736520030,
+    },
+    {
+      scenarioId: 1,
+      type: "line_update",
+      lineId: 5,
+      nextLineId: 6,
+      content: "BOB: Čekaj, čuješ li taj zvuk iza polica?",
+      timestamp: 1736520040,
+    },
+    {
+      scenarioId: 1,
+      type: "line_update",
+      lineId: 6,
+      nextLineId: null,
+      content: "NARATOR: Iz sjene se polako pojavila nepoznata figura.",
+      timestamp: 1736520050,
+    },
+    {
+      scenarioId: 1,
+      type: "char_rename",
+      oldName: "BOB",
+      newName: "ROBERT",
+      timestamp: 1736520100,
+    },
+  ];
+
+  await Scenario.create({ id: scenarioData.id, title: scenarioData.title });
+
+  for (const line of scenarioData.content) {
+    await Line.create({
+      lineId: line.lineId,
+      nextLineId: line.nextLineId,
+      text: line.text,
+      scenarioId: scenarioData.id,
+    });
+  }
+
+  for (const delta of deltasData) {
+    await Delta.create(delta);
+  }
+
+  console.log("Baza je inicijalizirana sa test podacima!");
+}
+
+seq.sync({ force: true }).then(async () => {
   console.log("Tabele su kreirane!");
+  await initializeDatabase();
   app.listen(3000, () => {
     console.log("Server radi na portu 3000");
   });
